@@ -1,0 +1,17 @@
+HUD/CrossHair
+{
+    zorder 200
+
+    container Panel(UIelements/CrossHairPanel)
+    {
+        metrics_mode pixels
+        horz_align center
+        vert_align center
+        left -25
+        top -25
+        width 50
+        height 50
+        material UI/Crosshair
+    }
+}
+

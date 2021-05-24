@@ -1,0 +1,166 @@
+material UI/Crosshair
+{
+    technique
+    {
+        pass
+        {
+            scene_blend alpha_blend
+            texture_unit 
+            {
+                texture crosshair.png
+            }
+        }
+    }
+}
+
+material TextureColors/Blue
+{
+    technique
+    {
+        pass
+        {
+			lighting off
+		
+            texture_unit
+			{
+				texture blue.jpg
+			}
+        }
+    }
+}
+
+material TextureColors/Red
+{
+    technique
+    {
+        pass
+        {
+			lighting off
+			
+            texture_unit
+			{
+				texture red.jpg
+			}
+        }
+    }
+}
+
+material TextureColors/Green
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.5 0.5 0.5
+
+			texture_unit
+			{
+				texture green.jpg
+			}
+		}
+	}
+}
+
+material Ascent/MetalSmall
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture metal_floor.jpg
+				scale 0.1 0.1
+			}
+		}
+	}
+}
+
+material Ascent/MetalMed
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture metal_floor.jpg
+				scale 0.3 0.3
+			}
+		}
+	}
+}
+
+material Ascent/SeamlessMetal
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture seamless_metal.jpg
+				scale 0.3 0.3
+			}
+		}
+	}
+}
+
+material Ascent/SeamlessConcrete
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture seamless_conc.jpg
+				scale 0.3 0.3
+			}
+		}
+	}
+}
+
+material Ascent/SeamlessConcrete2
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture seamless_conc2.jpg
+				scale 0.3 0.3
+			}
+		}
+	}
+}
+
+material Ascent/SeamlessCircuit
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture seamless_circuit.jpg
+				scale 0.3 0.3
+			}
+		}
+	}
+}
+
+material Ascent/Caution
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture caution.jpg
+			}
+		}
+	}
+}
