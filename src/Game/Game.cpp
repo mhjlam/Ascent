@@ -11,13 +11,17 @@
 #include <OGRE/RTShaderSystem/OgreShaderSubRenderState.h>
 
 #include "Common.hpp"
+
 #include "Map/GameWorld.hpp"
 #include "Map/LevelOne.hpp"
 #include "Map/LevelTwo.hpp"
+
+#include "Game/HUD.hpp"
 #include "Game/LoadingBar.hpp"
-#include "Game/TextRenderer.hpp"
+#include "Game/InputHandler.hpp"
 #include "Game/GameOverScreen.hpp"
 #include "Game/NotificationManager.hpp"
+
 #include "Entities/Player/Player.hpp"
 
 
@@ -36,10 +40,12 @@ Game::Game()
 , time_left_(180.0f)
 , overlay_system_(nullptr)
 , loading_bar_(nullptr)
+, input_handler_(nullptr)
 , game_over_(false)
 , player_died_(false)
 , has_save_file_(false) {
 	// OverlaySystem will be created in setup() after Ogre is initialized
+	// InputHandler will be created after 'this' is fully constructed
 }
 
 Game::~Game() {
@@ -155,6 +161,9 @@ void Game::setup() {
 	
 	// Get the OverlaySystem singleton (ApplicationContext creates it)
 	overlay_system_ = Ogre::OverlaySystem::getSingletonPtr();
+	
+	// Create InputHandler now that Game is fully constructed
+	input_handler_ = std::make_unique<InputHandler>(this);
 	
 	// Register input and frame listeners IMMEDIATELY after window creation
 	addInputListener(this);
@@ -351,30 +360,8 @@ void Game::load_resources() {
 }
 
 void Game::create_overlay() {
-	// Create a TEST overlay with a bright colored panel to see if overlays work at all
-	Ogre::OverlayManager& overlay_manager = Ogre::OverlayManager::getSingleton();
-	Ogre::Overlay* test_overlay = overlay_manager.create("TestOverlay");
-	Ogre::OverlayContainer* test_panels = static_cast<Ogre::OverlayContainer*>(
-		overlay_manager.createOverlayElement("Panel", "TestPanel"));
-	test_panels->setMetricsMode(Ogre::GMM_PIXELS);
-	test_panels->setPosition(100, 100);
-	test_panels->setDimensions(200, 200);
-	test_panels->setParameter("colour", "1 0 0");  // Bright red
-	test_overlay->add2D(test_panels);
-	test_overlay->setZOrder(500);
-	test_overlay->show();
-	
-	TextRenderer::instance().add_crosshair();
-	
-	// Create separate labels and values for proper alignment
-	TextRenderer::instance().add_textbox("hud_health_label", "HEALTH:", 10, 10, 200, 50, Ogre::ColourValue::White);
-	TextRenderer::instance().add_textbox("hud_health", "100", 110, 10, 200, 50, Ogre::ColourValue::White);
-
-	TextRenderer::instance().add_textbox("hud_timer_label", "TIMER:",  10, 50, 200, 50, Ogre::ColourValue::White);
-	TextRenderer::instance().add_textbox("hud_timer", "3:00", 110, 50, 200, 50, Ogre::ColourValue::White);
-	
-	TextRenderer::instance().add_textbox("hud_score_label", "SCORE:",  10, 90, 200, 50, Ogre::ColourValue::White);
-	TextRenderer::instance().add_textbox("hud_score", "0", 110, 90, 200, 50, Ogre::ColourValue::White);
+	// Initialize HUD
+	Hud::instance().initialize();
 }
 
 // initialize maps
@@ -560,8 +547,8 @@ void Game::swap_view() {
 		}
 		
 		Common::overview_camera->setAspectRatio(aspect_ratio);
-		TextRenderer::instance().hide_crosshair();
-		TextRenderer::instance().show_overview_map_text();
+		Hud::instance().hide_crosshair();
+		Hud::instance().show_overview_text();
 		NotificationManager::instance().hide_overlay();
 	}
     else {
@@ -573,63 +560,20 @@ void Game::swap_view() {
 		// Restore RTSS material scheme for per-pixel lighting in gameplay
 		viewport->setMaterialScheme(Ogre::MSN_SHADERGEN);
 		
-		TextRenderer::instance().show_crosshair();
-		TextRenderer::instance().hide_overview_map_text();
+		Hud::instance().show_crosshair();
+		Hud::instance().hide_overview_text();
 		NotificationManager::instance().show_overlay();
 	}
 }
 
 // update overlay
 void Game::update_overlay() {
-	std::stringstream health;
-	std::stringstream time;
-	std::stringstream score;
-
-	health << (Common::player ? Common::player->get_health() : 0);
-	score  << (Common::player ? Common::player->get_score() : 0);
+	// Get current values (default to 0 if player doesn't exist)
+	int health = Common::player ? Common::player->get_health() : 0;
+	int score = Common::player ? Common::player->get_score() : 0;
 	
-	// Format time as minutes:seconds
-	int total_seconds = static_cast<int>(time_left_);
-	int minutes = total_seconds / 60;
-	int seconds = total_seconds % 60;
-	time << minutes << ":" << (seconds < 10 ? "0" : "") << seconds;
-
-	TextRenderer::instance().set_text("hud_health", health.str());
-	TextRenderer::instance().set_text("hud_timer", time.str());
-	TextRenderer::instance().set_text("hud_score", score.str());
-
-	if (time_left_ < 0.0f) {
-		TextRenderer::instance().set_text("hud_timer", "0:00", Ogre::ColourValue(1.0f, 0.0f, 0.0f)); // set color to red
-	}
-	else if (time_left_ <= 30.0f) {
-		TextRenderer::instance().set_text("hud_timer", time.str(), Ogre::ColourValue(1.0f, 0.0f, 0.0f)); // set color to red
-	}
-	else if (time_left_ <= 60.0f) {
-		TextRenderer::instance().set_text("hud_timer", time.str(), Ogre::ColourValue(1.0f, 1.0f, 0.0f)); // set color to yellow
-	}
-	else {
-		TextRenderer::instance().set_text("hud_timer", time.str(), Ogre::ColourValue(1.0f, 1.0f, 1.0f)); // set color to white
-	}
-
-    if (Common::player) {
-		Ogre::uint player_health = Common::player->get_health();
-		Ogre::ColourValue indicator_color = Ogre::ColourValue(1.0f, 1.0f, 1.0f);
-
-		std::stringstream lifebar;
-		lifebar << player_health;
-
-		if (player_health <= 30) { // critical
-			indicator_color = Ogre::ColourValue(1.0f, 0.0f, 0.0f);
-		}
-		else if (player_health <= 60) { // damaged
-			indicator_color = Ogre::ColourValue(1.0f, 1.0f, 0.0f);
-		}
-		else { // healthy
-			indicator_color = Ogre::ColourValue(0.1f, 1.0f, 0.1f);
-		}
-
-		TextRenderer::instance().set_text("hud_health", lifebar.str(), indicator_color);
-	}
+	// Update HUD
+	Hud::instance().update(time_left_, health, score);
 }
 
 void Game::load_map(int map_id) {
@@ -708,137 +652,56 @@ void Game::load() {
 	}
 }
 
+// Public methods for InputHandler
+void Game::request_shutdown() {
+	shutdown_requested_ = true;
+	getRoot()->queueEndRendering();
+}
+
+void Game::restart_from_beginning() {
+	game_over_ = false;
+	player_died_ = false;
+	map_transition_pending_ = false;  // Clear any pending transition
+	GameOverScreen::instance().hide();
+	
+	// Reset to first level
+	GameWorld::instance().load_map_by_index(0);
+	time_left_ = 180.0f;
+	
+	// Show level notification
+	NotificationManager::instance().show_level_notification(1);
+}
+
+void Game::save_game() {
+	save();
+}
+
+void Game::load_game() {
+	load();
+}
+
+void Game::toggle_map_mode() {
+	map_mode_ = !map_mode_;
+}
+
 bool Game::keyPressed(const OgreBites::KeyboardEvent& event) {
-	if (event.keysym.sym == OgreBites::SDLK_ESCAPE) {
-		shutdown_requested_ = true;
-		getRoot()->queueEndRendering();
-		return true;
-	}
-	
-	// Handle game over screen input
-	if (game_over_) {
-		if (event.keysym.sym == OgreBites::SDLK_RETURN || event.keysym.sym == OgreBites::SDLK_KP_ENTER) {
-			// Restart game from level 1
-			game_over_ = false;
-			player_died_ = false;
-			map_transition_pending_ = false;  // Clear any pending transition
-			GameOverScreen::instance().hide();
-			
-			// Reset to first level
-			GameWorld::instance().load_map_by_index(0);
-			time_left_ = 180.0f;
-			
-			// Show level notification
-			NotificationManager::instance().show_level_notification(1);
-			return true;
-		}
-		else if (event.keysym.sym == OgreBites::SDLK_F8) {
-			// Try to load saved game
-			load();
-			return true;
-		}
-		// Ignore other inputs when game over
-		return true;
-	}
-	
-	if (event.keysym.sym == OgreBites::SDLK_F11) {
-		// Toggle fullscreen with F11
-		// First try Ogre's setFullscreen() - may not work on all RenderSystems
-		bool is_currently_fullscreen = Common::render_window->isFullScreen();
-		Common::render_window->setFullscreen(!is_currently_fullscreen, 
-			Common::render_window->getWidth(), 
-			Common::render_window->getHeight());
-		
-		// If Ogre's method doesn't work, the window state won't change
-		// and we'll need to accept that fullscreen toggle isn't supported
-		return true;
-	}
-	else if (event.keysym.sym == OgreBites::SDLK_RETURN 
-		&& (event.keysym.mod & OgreBites::KMOD_ALT)) {
-		// Toggle fullscreen with Alt+Enter
-		bool is_currently_fullscreen = Common::render_window->isFullScreen();
-		Common::render_window->setFullscreen(!is_currently_fullscreen, 
-			Common::render_window->getWidth(), 
-			Common::render_window->getHeight());
-		
-		return true;
-	}
-	else if (event.keysym.sym == OgreBites::SDLK_F5) {
-		if (!game_over_) {
-			save();
-		}
-	}
-	else if (event.keysym.sym == OgreBites::SDLK_F8) {
-		load();
-	}
-	else if (event.keysym.sym == '\t') {  // TAB key
-		if (game_over_) {
-			return true;  // Ignore TAB when game is over
-		}
-		
-		map_mode_ = !map_mode_;
-        if (Common::player) {
-			Common::player->stop_movement();
-		}
-        
-        // Set polygon mode back to solid for overview camera  
-        if (map_mode_) {
-            Common::overview_camera->setPolygonMode(Ogre::PM_SOLID);
-        } else {
-            Common::overview_camera->setPolygonMode(Ogre::PM_SOLID);
-        }
-        
-        // Position camera directly above player at fixed height
-		if (Common::overview_scene_manager->hasSceneNode("OverviewCameraNode")) {
-			auto* camera_node = Common::overview_scene_manager->getSceneNode("OverviewCameraNode");
-			if (camera_node && Common::player) {
-				Ogre::Vector3 playerPos = Common::player->get_position();
-				// Camera at moderate height to see scaled-down overview (geometry is 0.01x scale)
-				// Apply 180-degree Y rotation transform: (x,y,z) -> (-x,y,-z)
-				camera_node->setPosition(-playerPos.x, 200.0f, -playerPos.z);
-			}
-		}
-
-		swap_view();
-    }
-	else if (event.keysym.sym == OgreBites::SDLK_DELETE || event.keysym.sym == '\b') {  // DELETE or BACKSPACE
-		trigger_map_restart();
-		return true;
-	}
-
-	if (!map_mode_ && !game_over_ && Common::player) {
-		Common::player->inject_key_down(event);
-	}
-
-	return true;
+	return input_handler_->handle_key_pressed(event);
 }
 
 bool Game::keyReleased(const OgreBites::KeyboardEvent& event) {
-	if (!map_mode_ && !game_over_ && Common::player) {
-		Common::player->inject_key_up(event);
-	}
-    return true;
+	return input_handler_->handle_key_released(event);
 }
 
 bool Game::mouseMoved(const OgreBites::MouseMotionEvent& event) {
-	if (!map_mode_ && !game_over_ && Common::player) {
-		Common::player->inject_mouse_move(event);
-	}
-    return true;
+	return input_handler_->handle_mouse_moved(event);
 }
 
 bool Game::mousePressed(const OgreBites::MouseButtonEvent& event) {
-	if (!map_mode_ && !game_over_ && Common::player) {
-		Common::player->inject_mouse_down(event);
-	}
-    return true;
+	return input_handler_->handle_mouse_pressed(event);
 }
 
 bool Game::mouseReleased(const OgreBites::MouseButtonEvent& event) {
-	if (!map_mode_ && !game_over_ && Common::player) {
-		Common::player->inject_mouse_up(event);
-	}
-    return true;
+	return input_handler_->handle_mouse_released(event);
 }
 
 // main start of this class

@@ -11,6 +11,7 @@
 
 // Forward declarations
 class LoadingBar;
+class InputHandler;
 
 class Game 
 : public OgreBites::ApplicationContext
@@ -29,7 +30,19 @@ public:
 	void set_time_left(float time_left);
 	void trigger_map_end();
 	void trigger_map_restart();
-    void run();
+	void run();
+	
+	// Methods called by InputHandler
+	void request_shutdown();
+	void restart_from_beginning();
+	void save_game();
+	void load_game();
+	void toggle_map_mode();
+	void swap_view();
+	
+	// Accessors for InputHandler
+	bool is_game_over() const { return game_over_; }
+	bool is_map_mode() const { return map_mode_; }
 
 private: // singleton
 	Game();
@@ -37,7 +50,6 @@ private: // singleton
 
 private:
 	void update_overlay();
-	void swap_view();
 	void save();
 	void load();
 
@@ -82,6 +94,9 @@ private:
 	
 	// Loading bar for level transitions
 	std::unique_ptr<LoadingBar> loading_bar_;
+	
+	// Input handling
+	std::unique_ptr<InputHandler> input_handler_;
 	
 	// Game over state
 	bool game_over_;
