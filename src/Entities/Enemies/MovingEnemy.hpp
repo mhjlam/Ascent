@@ -6,11 +6,11 @@
 class MovingEnemy : public Enemy {
 public:
 	MovingEnemy(Ogre::Entity* entity, Ogre::SceneNode* node);
-    void update(const Ogre::Real& elapsed);
+    void update(const Ogre::Real& elapsed) override;
 
 protected:
 	void set_target(Ogre::Vector3);
-	virtual void get_default_anim_state() = 0;
+	void get_default_anim_state() override = 0;
 
 protected:
 	Ogre::uint target_;

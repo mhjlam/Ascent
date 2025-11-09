@@ -38,6 +38,19 @@ void NotificationManager::create_overlay() {
 		return;
 	}
 	
+	// Try to get existing overlay first (in case of level reload)
+	try {
+		overlay_ = overlay_manager_->getByName("NotificationOverlay");
+		if (overlay_) {
+			panel_ = static_cast<Ogre::OverlayContainer*>(overlay_manager_->getOverlayElement("NotificationPanel"));
+			text_element_ = overlay_manager_->getOverlayElement("NotificationText");
+			return;
+		}
+	}
+	catch (...) {
+		// Overlay doesn't exist yet, create it
+	}
+	
 	// Create overlay
 	overlay_ = overlay_manager_->create("NotificationOverlay");
 	overlay_->setZOrder(600);  // High z-order to appear on top
@@ -51,15 +64,15 @@ void NotificationManager::create_overlay() {
 	
 	// Create text element - use alignment to center it on screen
 	text_element_ = overlay_manager_->createOverlayElement("TextArea", "NotificationText");
-	text_element_->setMetricsMode(Ogre::GMM_PIXELS);
+	text_element_->setMetricsMode(Ogre::GMM_RELATIVE);
 	text_element_->setParameter("horz_align", "center");  // Center horizontally on screen
 	text_element_->setParameter("vert_align", "top");     // Align from top
 	text_element_->setLeft(0);  // No horizontal offset (centered by horz_align)
-	text_element_->setTop(270);  // 25% of 1080 = 270 pixels from top
-	text_element_->setWidth(800);  // Reasonable width for text
-	text_element_->setHeight(100);
+	text_element_->setTop(0.25f);  // 25% from top
+	text_element_->setWidth(0.8f);  // 80% of screen width
+	text_element_->setHeight(0.1f);  // 10% of screen height
 	text_element_->setParameter("font_name", "BlueHighway");
-	text_element_->setParameter("char_height", "32");  // Match font's native size for sharp rendering
+	text_element_->setParameter("char_height", "0.035");  // 3.5% of screen height for sharp, visible notifications
 	text_element_->setParameter("alignment", "center");  // Center text within the text area
 	text_element_->setParameter("colour_top", "1 1 0");  // Bright yellow
 	text_element_->setParameter("colour_bottom", "1 1 0");  // Bright yellow

@@ -32,20 +32,23 @@ void Enemy::update(const Ogre::Real& elapsed) {
 
 	fire_timer_ += elapsed;
     
-    if (fire_timer_ >= Ogre::Math::RangeRandom(2.0f, 10.0f) && Common::player->get_position().squaredDistance(get_position()) <= 5000.0f*5000.0f) {
+    if (animation_state_ && fire_timer_ >= Ogre::Math::RangeRandom(2.0f, 10.0f) && Common::player->get_position().squaredDistance(get_position()) <= 5000.0f*5000.0f) {
 		// run the shooting animation once
 		animation_state_->setEnabled(false);
-		animation_state_ = entity_->getAnimationState("Shoot");
+		
+		if (entity_->hasSkeleton() && entity_->getSkeleton()->hasAnimation("Shoot")) {
+			animation_state_ = entity_->getAnimationState("Shoot");
 
-		// since the animation might have already run once (and it's not looped) reset the time position
-		animation_state_->setTimePosition(0);
-		animation_state_->setLoop(false);
-		animation_state_->setEnabled(true);
+			// since the animation might have already run once (and it's not looped) reset the time position
+			animation_state_->setTimePosition(0);
+			animation_state_->setLoop(false);
+			animation_state_->setEnabled(true);
+		}
 
 		// fire away
 		fire_at(Common::player);
 	} 
-	else if (animation_state_->getAnimationName() == "Shoot" && animation_state_->hasEnded()) {
+	else if (animation_state_ && animation_state_->getAnimationName() == "Shoot" && animation_state_->hasEnded()) {
 		// if we ran the shooting animation switch back to other animation
 		animation_state_->setEnabled(false);
 		get_default_anim_state();
@@ -54,7 +57,9 @@ void Enemy::update(const Ogre::Real& elapsed) {
 	// yaw ninty degrees so the robot looks at the player from the front instead of from the side
 	main_node_->yaw(Ogre::Radian(std::numbers::pi_v<float> / 2.0f));
 
-	animation_state_->addTime(elapsed);
+	if (animation_state_) {
+		animation_state_->addTime(elapsed);
+	}
 }
 
 void Enemy::fire_at(const GameEntity* const entity) {
@@ -73,7 +78,7 @@ void Enemy::fire_at(const Ogre::Vector3& location) {
             EntityType::EnemyProjectileType, start_position, location, main_node_->getOrientation());
     }
     catch (Ogre::Exception& e) {
-        std::cerr << e.what() << std::endl;
+        std::cerr << e.what() << '\n';
     }
 
     // reset timer
@@ -122,11 +127,14 @@ void Enemy::hit(Ogre::uint damage) {
 
 void Enemy::get_default_anim_state() {
 	try {
-        animation_state_ = entity_->getAnimationState("Idle");
-        animation_state_->setLoop(true);
-        animation_state_->setEnabled(true);
+		// Check if entity has animations before accessing animation state
+		if (entity_->hasSkeleton() && entity_->getSkeleton()->hasAnimation("Idle")) {
+			animation_state_ = entity_->getAnimationState("Idle");
+			animation_state_->setLoop(true);
+			animation_state_->setEnabled(true);
+		}
     } 
 	catch (Ogre::ItemIdentityException& e) {   
-        std::cerr << e.what() << std::endl;
+        std::cerr << e.what() << '\n';
 	}
 }

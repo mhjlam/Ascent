@@ -7,24 +7,7 @@ Map::Map()
 , active_entity_(nullptr) {}
 
 Map::~Map() {
-    // fastest way of deleting pointers in three different vectors
-    size_t max = std::max(std::max(brushes_.size(), lights_.size()), entities_.size());
- 
-    for (size_t i = 0; i < max; ++i) {
-        if (i < brushes_.size()) {
-            delete brushes_.at(i);
-        }
-        if (i < lights_.size()) {
-            delete lights_.at(i);
-        }
-        if (i < entities_.size()) {
-            delete entities_.at(i);
-        }
-    }
-
-    brushes_.clear();
-    lights_.clear();
-    entities_.clear();
+    // unique_ptr automatically deletes objects, vectors automatically clear
 }
 
 // helpers to prevent duplicate code (a little)
@@ -63,12 +46,13 @@ void Map::set_map_fog_range(Ogre::Real start, Ogre::Real end) {
 }
 
 void Map::create_brush(const Ogre::String& name, BrushType type) {
-    active_brush_ = new BrushInfo();
-    active_brush_->id = name;
-    active_brush_->type = EntityType::Brush;
-    active_brush_->brush_type = type;
-    active_brush_->cast_shadows = true; //otherwise light will go right through it, but it can be disabled if neccesary
-    brushes_.push_back(active_brush_);    
+    auto brush = std::make_unique<BrushInfo>();
+    brush->id = name;
+    brush->type = EntityType::Brush;
+    brush->brush_type = type;
+    brush->cast_shadows = true; //otherwise light will go right through it, but it can be disabled if neccesary
+    active_brush_ = brush.get();
+    brushes_.push_back(std::move(brush));    
 }
 
 void Map::set_brush_location(Ogre::Real x, Ogre::Real y, Ogre::Real z) {
@@ -206,9 +190,10 @@ void Map::set_wall_material(const Ogre::String& material_name) {
 }
 
 void Map::create_light(const Ogre::String& name) {
-    active_light_ = new LightInfo();
-    active_light_->id = name;
-    lights_.push_back(active_light_);
+    auto light = std::make_unique<LightInfo>();
+    light->id = name;
+    active_light_ = light.get();
+    lights_.push_back(std::move(light));
 }
 
 void Map::set_light_location(Ogre::Real x, Ogre::Real y, Ogre::Real z) {
@@ -220,9 +205,10 @@ void Map::set_light_color(Ogre::Real r, Ogre::Real g, Ogre::Real b) {
 }
 
 void Map::create_entity(const Ogre::String& name) {
-    active_entity_ = new EntityInfo();
-    active_entity_->id = name;
-    entities_.push_back(active_entity_);
+    auto entity = std::make_unique<EntityInfo>();
+    entity->id = name;
+    active_entity_ = entity.get();
+    entities_.push_back(std::move(entity));
 }
 
 void Map::set_entity_location(Ogre::Real x, Ogre::Real y, Ogre::Real z) {

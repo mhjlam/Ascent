@@ -16,17 +16,13 @@ public:
 
 public:
 	void create_projectile(EntityType projectileType, 
-								  const Ogre::Vector3& position, 
-								  const Ogre::Vector3& target, 
-								  const Ogre::Quaternion& orientation, 
-								  bool targetIsDirection = false);
+						   const Ogre::Vector3& position, 
+						   const Ogre::Vector3& target, 
+						   const Ogre::Quaternion& orientation, 
+						   bool targetIsDirection = false);
 	
-	Ogre::uint get_num_enemy_projectiles() const { 
-		return num_enemy_projectiles_;
-	}
-	Ogre::uint get_num_player_projectiles() const { 
-		return num_player_projectiles_;
-	}
+	Ogre::uint get_num_enemy_projectiles() const { 	return num_enemy_projectiles_; }
+	Ogre::uint get_num_player_projectiles() const { return num_player_projectiles_; }
 
 private:
 	ProjectileFactory();

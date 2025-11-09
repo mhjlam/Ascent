@@ -69,146 +69,146 @@ void GameOverScreen::create_overlay() {
 	
 	// Create title text shadow
 	title_shadow_ = overlay_manager_->createOverlayElement("TextArea", "GameOverTitleShadow");
-	title_shadow_->setMetricsMode(Ogre::GMM_PIXELS);
+	title_shadow_->setMetricsMode(Ogre::GMM_RELATIVE);
 	title_shadow_->setParameter("horz_align", "center");
 	title_shadow_->setParameter("vert_align", "top");
-	title_shadow_->setLeft(3);  // Offset for shadow effect
-	title_shadow_->setTop(203);
-	title_shadow_->setWidth(1000);
-	title_shadow_->setHeight(100);
+	title_shadow_->setLeft(3.0f / 1024.0f);  // Offset for shadow effect
+	title_shadow_->setTop(203.0f / 768.0f);
+	title_shadow_->setWidth(1.0f);
+	title_shadow_->setHeight(0.13f);
 	title_shadow_->setParameter("font_name", "BlueHighway");
-	title_shadow_->setParameter("char_height", "64");
+	title_shadow_->setParameter("char_height", "0.08");  // 8% of screen height for large title
 	title_shadow_->setParameter("alignment", "center");
 	title_shadow_->setColour(Ogre::ColourValue(0.0f, 0.0f, 0.0f, 0.8f));  // Black shadow
 	
 	// Create title text (Game Over / Victory) - centered
 	title_text_ = overlay_manager_->createOverlayElement("TextArea", "GameOverTitle");
-	title_text_->setMetricsMode(Ogre::GMM_PIXELS);
+	title_text_->setMetricsMode(Ogre::GMM_RELATIVE);
 	title_text_->setParameter("horz_align", "center");
 	title_text_->setParameter("vert_align", "top");
 	title_text_->setLeft(0);
-	title_text_->setTop(200);  // 200 pixels from top
-	title_text_->setWidth(1000);
-	title_text_->setHeight(100);
+	title_text_->setTop(200.0f / 768.0f);  // 200 pixels from top
+	title_text_->setWidth(1.0f);
+	title_text_->setHeight(0.13f);
 	title_text_->setParameter("font_name", "BlueHighway");
-	title_text_->setParameter("char_height", "64");  // Large title
+	title_text_->setParameter("char_height", "0.08");  // 8% of screen height for large title
 	title_text_->setParameter("alignment", "center");
 	title_text_->setColour(Ogre::ColourValue(1.0f, 0.0f, 0.0f, 1.0f));
 	
 	// Create score text shadow
 	score_shadow_ = overlay_manager_->createOverlayElement("TextArea", "GameOverScoreShadow");
-	score_shadow_->setMetricsMode(Ogre::GMM_PIXELS);
+	score_shadow_->setMetricsMode(Ogre::GMM_RELATIVE);
 	score_shadow_->setParameter("horz_align", "center");
 	score_shadow_->setParameter("vert_align", "top");
-	score_shadow_->setLeft(2);
-	score_shadow_->setTop(352);
-	score_shadow_->setWidth(800);
-	score_shadow_->setHeight(80);
+	score_shadow_->setLeft(2.0f / 1024.0f);
+	score_shadow_->setTop(352.0f / 768.0f);
+	score_shadow_->setWidth(0.8f);
+	score_shadow_->setHeight(0.1f);
 	score_shadow_->setParameter("font_name", "BlueHighway");
-	score_shadow_->setParameter("char_height", "48");
+	score_shadow_->setParameter("char_height", "0.06");  // 6% of screen height
 	score_shadow_->setParameter("alignment", "center");
 	score_shadow_->setColour(Ogre::ColourValue(0.0f, 0.0f, 0.0f, 0.8f));
 	
 	// Create score text
 	score_text_ = overlay_manager_->createOverlayElement("TextArea", "GameOverScore");
-	score_text_->setMetricsMode(Ogre::GMM_PIXELS);
+	score_text_->setMetricsMode(Ogre::GMM_RELATIVE);
 	score_text_->setParameter("horz_align", "center");
 	score_text_->setParameter("vert_align", "top");
 	score_text_->setLeft(0);
-	score_text_->setTop(350);
-	score_text_->setWidth(800);
-	score_text_->setHeight(80);
+	score_text_->setTop(350.0f / 768.0f);
+	score_text_->setWidth(0.8f);
+	score_text_->setHeight(0.1f);
 	score_text_->setParameter("font_name", "BlueHighway");
-	score_text_->setParameter("char_height", "48");
+	score_text_->setParameter("char_height", "0.06");  // 6% of screen height
 	score_text_->setParameter("alignment", "center");
 	score_text_->setColour(Ogre::ColourValue(1.0f, 1.0f, 1.0f, 1.0f));
 	
 	// Create restart prompt shadow
 	restart_shadow_ = overlay_manager_->createOverlayElement("TextArea", "GameOverRestartShadow");
-	restart_shadow_->setMetricsMode(Ogre::GMM_PIXELS);
+	restart_shadow_->setMetricsMode(Ogre::GMM_RELATIVE);
 	restart_shadow_->setParameter("horz_align", "center");
 	restart_shadow_->setParameter("vert_align", "top");
-	restart_shadow_->setLeft(2);
-	restart_shadow_->setTop(502);
-	restart_shadow_->setWidth(800);
-	restart_shadow_->setHeight(60);
+	restart_shadow_->setLeft(2.0f / 1024.0f);
+	restart_shadow_->setTop(502.0f / 768.0f);
+	restart_shadow_->setWidth(0.8f);
+	restart_shadow_->setHeight(0.08f);
 	restart_shadow_->setParameter("font_name", "BlueHighway");
-	restart_shadow_->setParameter("char_height", "32");
+	restart_shadow_->setParameter("char_height", "0.04");  // 4% of screen height
 	restart_shadow_->setParameter("alignment", "center");
 	restart_shadow_->setColour(Ogre::ColourValue(0.0f, 0.0f, 0.0f, 0.8f));
 	restart_shadow_->setCaption("Press ENTER to Restart");
 	
 	// Create restart prompt
 	restart_prompt_ = overlay_manager_->createOverlayElement("TextArea", "GameOverRestart");
-	restart_prompt_->setMetricsMode(Ogre::GMM_PIXELS);
+	restart_prompt_->setMetricsMode(Ogre::GMM_RELATIVE);
 	restart_prompt_->setParameter("horz_align", "center");
 	restart_prompt_->setParameter("vert_align", "top");
 	restart_prompt_->setLeft(0);
-	restart_prompt_->setTop(500);
-	restart_prompt_->setWidth(800);
-	restart_prompt_->setHeight(60);
+	restart_prompt_->setTop(500.0f / 768.0f);
+	restart_prompt_->setWidth(0.8f);
+	restart_prompt_->setHeight(0.08f);
 	restart_prompt_->setParameter("font_name", "BlueHighway");
-	restart_prompt_->setParameter("char_height", "32");  // Match font native size
+	restart_prompt_->setParameter("char_height", "0.04");  // 4% of screen height
 	restart_prompt_->setParameter("alignment", "center");
 	restart_prompt_->setColour(Ogre::ColourValue(0.8f, 0.8f, 0.8f, 1.0f));
 	restart_prompt_->setCaption("Press ENTER to Restart");
 	
 	// Create load prompt shadow
 	load_shadow_ = overlay_manager_->createOverlayElement("TextArea", "GameOverLoadShadow");
-	load_shadow_->setMetricsMode(Ogre::GMM_PIXELS);
+	load_shadow_->setMetricsMode(Ogre::GMM_RELATIVE);
 	load_shadow_->setParameter("horz_align", "center");
 	load_shadow_->setParameter("vert_align", "top");
-	load_shadow_->setLeft(2);
-	load_shadow_->setTop(542);
-	load_shadow_->setWidth(800);
-	load_shadow_->setHeight(60);
+	load_shadow_->setLeft(2.0f / 1024.0f);
+	load_shadow_->setTop(542.0f / 768.0f);
+	load_shadow_->setWidth(0.8f);
+	load_shadow_->setHeight(0.08f);
 	load_shadow_->setParameter("font_name", "BlueHighway");
-	load_shadow_->setParameter("char_height", "32");
+	load_shadow_->setParameter("char_height", "0.04");
 	load_shadow_->setParameter("alignment", "center");
 	load_shadow_->setColour(Ogre::ColourValue(0.0f, 0.0f, 0.0f, 0.8f));
 	load_shadow_->setCaption("Press F8 to Load Save");
 	
 	// Create load prompt
 	load_prompt_ = overlay_manager_->createOverlayElement("TextArea", "GameOverLoad");
-	load_prompt_->setMetricsMode(Ogre::GMM_PIXELS);
+	load_prompt_->setMetricsMode(Ogre::GMM_RELATIVE);
 	load_prompt_->setParameter("horz_align", "center");
 	load_prompt_->setParameter("vert_align", "top");
 	load_prompt_->setLeft(0);
-	load_prompt_->setTop(540);
-	load_prompt_->setWidth(800);
-	load_prompt_->setHeight(60);
+	load_prompt_->setTop(540.0f / 768.0f);
+	load_prompt_->setWidth(0.8f);
+	load_prompt_->setHeight(0.08f);
 	load_prompt_->setParameter("font_name", "BlueHighway");
-	load_prompt_->setParameter("char_height", "32");  // Match font native size
+	load_prompt_->setParameter("char_height", "0.04");  // Match font native size
 	load_prompt_->setParameter("alignment", "center");
 	load_prompt_->setColour(Ogre::ColourValue(0.8f, 0.8f, 0.8f, 1.0f));
 	load_prompt_->setCaption("Press F8 to Load Save");
 	
 	// Create exit prompt shadow
 	exit_shadow_ = overlay_manager_->createOverlayElement("TextArea", "GameOverExitShadow");
-	exit_shadow_->setMetricsMode(Ogre::GMM_PIXELS);
+	exit_shadow_->setMetricsMode(Ogre::GMM_RELATIVE);
 	exit_shadow_->setParameter("horz_align", "center");
 	exit_shadow_->setParameter("vert_align", "top");
-	exit_shadow_->setLeft(2);
-	exit_shadow_->setTop(582);
-	exit_shadow_->setWidth(800);
-	exit_shadow_->setHeight(60);
+	exit_shadow_->setLeft(2.0f / 1024.0f);
+	exit_shadow_->setTop(582.0f / 768.0f);
+	exit_shadow_->setWidth(0.8f);
+	exit_shadow_->setHeight(0.08f);
 	exit_shadow_->setParameter("font_name", "BlueHighway");
-	exit_shadow_->setParameter("char_height", "32");
+	exit_shadow_->setParameter("char_height", "0.04");
 	exit_shadow_->setParameter("alignment", "center");
 	exit_shadow_->setColour(Ogre::ColourValue(0.0f, 0.0f, 0.0f, 0.8f));
 	exit_shadow_->setCaption("Press ESC to Exit");
 	
 	// Create exit prompt
 	exit_prompt_ = overlay_manager_->createOverlayElement("TextArea", "GameOverExit");
-	exit_prompt_->setMetricsMode(Ogre::GMM_PIXELS);
+	exit_prompt_->setMetricsMode(Ogre::GMM_RELATIVE);
 	exit_prompt_->setParameter("horz_align", "center");
 	exit_prompt_->setParameter("vert_align", "top");
 	exit_prompt_->setLeft(0);
-	exit_prompt_->setTop(580);
-	exit_prompt_->setWidth(800);
-	exit_prompt_->setHeight(60);
+	exit_prompt_->setTop(580.0f / 768.0f);
+	exit_prompt_->setWidth(0.8f);
+	exit_prompt_->setHeight(0.08f);
 	exit_prompt_->setParameter("font_name", "BlueHighway");
-	exit_prompt_->setParameter("char_height", "32");  // Match font native size
+	exit_prompt_->setParameter("char_height", "0.04");  // Match font native size
 	exit_prompt_->setParameter("alignment", "center");
 	exit_prompt_->setColour(Ogre::ColourValue(0.8f, 0.8f, 0.8f, 1.0f));
 	exit_prompt_->setCaption("Press ESC to Exit");

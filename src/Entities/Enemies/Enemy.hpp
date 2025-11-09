@@ -8,9 +8,9 @@
 class Enemy : public GameEntity {
 public:
 	Enemy(Ogre::Entity* entity, Ogre::SceneNode* node);
-	virtual ~Enemy() = default;
+	~Enemy() override = default;
 
-    virtual void update(const Ogre::Real& elapsed);
+    void update(const Ogre::Real& elapsed) override;
 	void hit(Ogre::uint damage);
 
 protected:

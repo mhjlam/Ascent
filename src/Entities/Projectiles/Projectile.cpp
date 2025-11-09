@@ -20,44 +20,41 @@ void Projectile::update(const Ogre::Real& elapsed) {
     // check for collision
     Ogre::Ray front_ray(get_position(), get_direction());
 
-	Common::ray_scene_query->setRay(front_ray);
-	Common::ray_scene_query->setSortByDistance(true, 5);
-    Common::ray_scene_query->setQueryMask(
-        static_cast<Ogre::uint32>(QueryFlags::Wall) | static_cast<Ogre::uint32>(QueryFlags::Enemy));
-	
-	Ogre::RaySceneQueryResult::iterator it;
-	Ogre::RaySceneQueryResult& result = Common::ray_scene_query->execute();
+    Common::ray_scene_query->setRay(front_ray);
+    Common::ray_scene_query->setSortByDistance(true, 5);
+    Common::ray_scene_query->setQueryMask(to_ogre_flags(QueryFlags::Wall | QueryFlags::Enemy));
+    
+    const auto& result = Common::ray_scene_query->execute();
 
-	for (it = result.begin(); it != result.end(); ++it) {
-		if (it->movable->getQueryFlags() == static_cast<Ogre::uint32>(QueryFlags::Wall) && it->distance <= 100.0f) { // hit a wall
-			destroy();
-			return;
-		}
-		else if (it->movable->getQueryFlags() == static_cast<Ogre::uint32>(QueryFlags::Enemy) && it->distance <= 300.0f) { // hit an enemy
-            if (is_entity_type(EntityType::PlayerProjectileType)) {
-                // damage enemy
-                if (it->movable->isAttached()) { // this should always be the case, but check anyway
-                    if (it->movable->getParentNode()->getUserAny().isEmpty() == false) {
-                        // sadly, this cast doesn't support abstract types, so all info about any subclasses of Enemy is lost
-                        Enemy* const enemy = Ogre::any_cast<Enemy*>((it->movable->getParentNode()->getUserAny()));
-                        if (enemy) { 
-                            enemy->hit(damage_);
-                        }
-                    }
+    for (const auto& query_result : result) {
+        const auto flags = query_result.movable->getQueryFlags();
+        
+        if (flags == to_ogre_flags(QueryFlags::Wall) && query_result.distance <= 100.0f) {
+            destroy();
+            return;
+        }
+        
+        if (flags == to_ogre_flags(QueryFlags::Enemy) && 
+            query_result.distance <= 300.0f && 
+            is_entity_type(EntityType::PlayerProjectileType)) {
+            
+            auto* parent_node = query_result.movable->getParentNode();
+            if (parent_node && !parent_node->getUserAny().isEmpty()) {
+                if (auto* enemy = Ogre::any_cast<Enemy*>(parent_node->getUserAny())) {
+                    enemy->hit(damage_);
                 }
-
-                destroy();
-			    return;
             }
-        } 
-	}
+            
+            destroy();
+            return;
+        }
+    }
 
-    // if it didn't hit anything, move in the specified direction
-    Ogre::Vector3 distance = get_direction() * (speed_ * elapsed);
-    main_node_->translate(distance, Ogre::Node::TS_WORLD);
+    // move in the specified direction
+    main_node_->translate(get_direction() * (speed_ * elapsed), Ogre::Node::TS_WORLD);
 
-    // check if the projectile has reached its max range
-    if (main_node_->getPosition().squaredDistance(start_position_) > range_*range_) {
+    // check if max range reached
+    if (main_node_->getPosition().squaredDistance(start_position_) > range_ * range_) {
         destroy();
     }
 }

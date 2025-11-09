@@ -153,10 +153,11 @@ endif()
 if(EXISTS "${CMAKE_SOURCE_DIR}/res")
     # Copy res to appropriate directory based on configuration
     add_custom_command(TARGET Ascent POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E echo "Copying resources to output directory"
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_SOURCE_DIR}/res"
         "$<IF:$<CONFIG:Debug>,${BIN_DEBUG_DIR}/res,${BIN_RELEASE_DIR}/res>"
-        COMMENT "Copying resources to output directory"
+        VERBATIM
     )
 else()
     message(WARNING "Resources directory not found at ${CMAKE_SOURCE_DIR}/res")
@@ -164,26 +165,27 @@ endif()
 
 # Copy Ogre configuration files to output directories
 add_custom_command(TARGET Ascent POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E echo "Copying Ogre configuration files to output directory"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
     "${CMAKE_SOURCE_DIR}/cfg/plugins.cfg"
     "${CMAKE_SOURCE_DIR}/cfg/plugins_d.cfg"
     "${CMAKE_SOURCE_DIR}/cfg/resources.cfg"
     "${CMAKE_SOURCE_DIR}/cfg/resources_d.cfg"
     "$<IF:$<CONFIG:Debug>,${BIN_DEBUG_DIR},${BIN_RELEASE_DIR}>"
-    COMMENT "Copying Ogre configuration files to output directory"
+    VERBATIM
 )
 
 # Copy Ogre plugin DLLs and dependencies to output directory
 if(WIN32)
     add_custom_command(TARGET Ascent POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E echo "Copying Ogre plugins and DLLs..."
+        COMMAND ${CMAKE_COMMAND} -E echo "Copying Ogre plugins and dependency DLLs"
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_CURRENT_BINARY_DIR}/vcpkg_installed/x64-windows/$<IF:$<CONFIG:Debug>,debug/,>plugins/ogre"
         "$<IF:$<CONFIG:Debug>,${BIN_DEBUG_DIR},${BIN_RELEASE_DIR}>"
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_CURRENT_BINARY_DIR}/vcpkg_installed/x64-windows/$<IF:$<CONFIG:Debug>,debug/,>bin"
         "$<IF:$<CONFIG:Debug>,${BIN_DEBUG_DIR},${BIN_RELEASE_DIR}>"
-        COMMENT "Copying Ogre plugins and dependency DLLs"
+        VERBATIM
     )
 endif()
 

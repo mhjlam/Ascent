@@ -30,6 +30,21 @@ void LoadingBar::create_overlay() {
         return;
     }
     
+    // Try to get existing overlay first (in case of level reload)
+    try {
+        overlay_ = overlay_mgr.getByName("LoadingOverlay");
+        if (overlay_) {
+            panel_ = static_cast<Ogre::OverlayContainer*>(overlay_mgr.getOverlayElement("LoadingPanel"));
+            loading_text_ = overlay_mgr.getOverlayElement("LoadingText");
+            progress_bar_container_ = static_cast<Ogre::OverlayContainer*>(overlay_mgr.getOverlayElement("ProgressBarContainer"));
+            progress_bar_ = overlay_mgr.getOverlayElement("ProgressBar");
+            return;
+        }
+    }
+    catch (...) {
+        // Overlay doesn't exist yet, create it
+    }
+    
     // Check if elements already exist and destroy them first
     if (overlay_mgr.hasOverlayElement("LoadingPanel")) {
         overlay_mgr.destroyOverlayElement("LoadingPanel");
@@ -120,9 +135,9 @@ void LoadingBar::finish() {
     
     // Hide and destroy overlay
     if (overlay_) {
-        std::cout << "LoadingBar::finish() - Hiding LoadingOverlay" << std::endl;
+        std::cout << "LoadingBar::finish() - Hiding LoadingOverlay\n";
         overlay_->hide();
-        std::cout << "LoadingOverlay visible after hide: " << (overlay_->isVisible() ? "YES" : "NO") << std::endl;
+        std::cout << "LoadingOverlay visible after hide: " << (overlay_->isVisible() ? "YES" : "NO") << '\n';
     }
 }
 
@@ -161,7 +176,8 @@ void LoadingBar::resourceGroupScriptingStarted([[maybe_unused]] const Ogre::Stri
     // Try to set font now that resources are being loaded
     try {
         if (loading_text_) {
-            loading_text_->setParameter("font_name", "BlueHighway-12");
+            loading_text_->setParameter("font_name", "BlueHighway");
+            loading_text_->setParameter("char_height", "0.03"); // Height as fraction of screen
         }
     }
     catch (...) {

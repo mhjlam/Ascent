@@ -3,6 +3,7 @@
 #include "Entities/Player/Player.hpp"
 
 
+// Non-owning pointer to player (owned by GameWorld's entities_ list)
 Player* Common::player = nullptr;
 GameState Common::game_state;
 
@@ -19,11 +20,8 @@ Ogre::SceneManager*	Common::overview_scene_manager = nullptr;
 
 
 void Common::cleanup() {
-	// Delete objects we own
-	if (player) {
-		delete player;
-		player = nullptr;
-	}
+	// Player is owned by GameWorld's entities_ list, just clear our non-owning pointer
+	player = nullptr;
 	
 	// RaySceneQuery is owned by us, not Ogre
 	if (ray_scene_query && Common::scene_manager) {

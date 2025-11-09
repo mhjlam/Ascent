@@ -22,6 +22,7 @@ Player::Player(Ogre::SceneNode* const player_node)
 , roll_left_(false)
 , roll_right_(false)
 , shooting_(false)
+, exit_triggered_(false)
 , top_speed_(35.0f)
 , top_rotation_(180.0f)
 , velocity_(Ogre::Vector3::ZERO)
@@ -268,36 +269,38 @@ void Player::detect_collisions() {
 		Ogre::Vector3::UNIT_Z);
 
 	Ogre::Ray rays[] = { ray_down, ray_up, ray_left, ray_right, ray_front, ray_back };
-	Ogre::RaySceneQueryResult::iterator it;
 	
 	for (int i = 0; i < 6; ++i) { // each ray
 		Common::ray_scene_query->setRay(rays[i]);
 		Common::ray_scene_query->setSortByDistance(true);
-		Common::ray_scene_query->setQueryMask(static_cast<Ogre::uint32>(QueryFlags::Wall));
+		Common::ray_scene_query->setQueryMask(to_ogre_flags(QueryFlags::Wall));
 
-		Ogre::RaySceneQueryResult& result = Common::ray_scene_query->execute();
+		const auto& result = Common::ray_scene_query->execute();
 
-		for (it = result.begin(); it != result.end(); ++it) { // all walls this ray passes through
-			if (it->movable->getQueryFlags() == static_cast<Ogre::uint32>(QueryFlags::Wall)) {
-				Ogre::Vector3 origin = rays[i].getOrigin();
+		for (const auto& query_result : result) { // all walls this ray passes through
+			if (query_result.movable->getQueryFlags() == to_ogre_flags(QueryFlags::Wall)) {
+				const Ogre::Vector3 origin = rays[i].getOrigin();
 				Ogre::Vector3 direction = rays[i].getDirection();
-				Ogre::Real direction_length = direction.length();
-				Ogre::Real distance = it->distance;
+				const Ogre::Real direction_length = direction.length();
+				const Ogre::Real distance = query_result.distance;
 
 				direction /= direction_length; // direction is now a unit vector
-				Ogre::Vector3 intersection = origin + (direction * distance); // position of the intersection
+				const Ogre::Vector3 intersection = origin + (direction * distance); // position of the intersection
 
 				if (intersection.squaredDistance(current_position) <= 100.0f*100.0f) {
 					// check if the player hit the ending point
-                	if (it->movable->isAttached()) {
+                	if (query_result.movable->isAttached()) {
                     	// note that the BrushEntity is attached to the SceneNode, not the Ogre::Entity itself
                     	const BrushEntity* const brush = 
-							Ogre::any_cast<BrushEntity*>(it->movable->getParentNode()->getUserAny());
+							Ogre::any_cast<BrushEntity*>(query_result.movable->getParentNode()->getUserAny());
 
                     	// this is the ending point
                     	if (brush->is_brush_type(BrushType::Exit)) {
-                        	// so we trigger the map's end
-                        	Game::instance()->trigger_map_end();
+                        	// Only trigger once per level - prevent double-trigger
+							if (!exit_triggered_) {
+								exit_triggered_ = true;
+								Game::instance().trigger_map_end();
+							}
                         	return;
                     	}
                 	}

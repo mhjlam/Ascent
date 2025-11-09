@@ -24,32 +24,32 @@ public:
     void move_to(const Ogre::Vector3& position);
 
 public: // getters
-    virtual const Ogre::AxisAlignedBox get_bounding_box() { 
+    [[nodiscard]] virtual Ogre::AxisAlignedBox get_bounding_box() const { 
         return entity_ ? entity_->getBoundingBox() : bounding_box_;
     }
 
-    bool is_alive() const { 
+    [[nodiscard]] bool is_alive() const { 
         return alive_;
     }
-    bool is_entity_type(const EntityType& type) const { 
+    [[nodiscard]] bool is_entity_type(const EntityType& type) const { 
         return type_ == type;
     }
-    const EntityType& get_type() const { 
+    [[nodiscard]] const EntityType& get_type() const { 
         return type_;
     }
-    Ogre::Entity* const get_entity() { 
+    [[nodiscard]] Ogre::Entity* get_entity() const { 
         return entity_;
     }
-    Ogre::SceneNode* const get_node() { 
+    [[nodiscard]] Ogre::SceneNode* get_node() const { 
         return main_node_;
     }
-	const Ogre::Vector3& get_start_position() const { 
+	[[nodiscard]] const Ogre::Vector3& get_start_position() const { 
         return start_position_;
     }
-    const Ogre::Vector3 get_position() const { 
+    [[nodiscard]] Ogre::Vector3 get_position() const { 
         return main_node_->getPosition();
     }
-    const Ogre::Vector3& get_direction() const { 
+    [[nodiscard]] const Ogre::Vector3& get_direction() const { 
         return direction_;
     }
 

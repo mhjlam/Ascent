@@ -12,7 +12,7 @@ EnemyProjectile::EnemyProjectile(Ogre::Entity* const entity,
 								 const Ogre::Quaternion& orientation)
 : Projectile(entity, node, direction, orientation) {
 	damage_ = 10;
-	speed_ = 2500.0f;
+	speed_ = 4000.0f;
 	range_ = 10000.0f;
 }
 

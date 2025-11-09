@@ -8,6 +8,142 @@
 #include "Entities/Player/Player.hpp"
 #include "Entities/Enemies/EnemyFactory.hpp"
 
+/*
+ *  Helper function to create primitive meshes programmatically.
+ *  This replaces the deprecated PT_CUBE and PT_SPHERE prefabs.
+ */
+namespace {
+    void create_primitive_meshes(Ogre::SceneManager* scene_mgr) {
+        // FORCE remove old meshes to ensure we get clean ones
+        if (Ogre::MeshManager::getSingleton().resourceExists("ProgrammaticCube")) {
+            Ogre::MeshManager::getSingleton().remove("ProgrammaticCube");
+        }
+        if (Ogre::MeshManager::getSingleton().resourceExists("ProgrammaticSphere")) {
+            Ogre::MeshManager::getSingleton().remove("ProgrammaticSphere");
+        }
+        
+        // Create unit cube mesh
+        {
+            Ogre::ManualObject* manual = scene_mgr->createManualObject();
+            // Use BaseWhite material which can be overridden
+            manual->begin("BaseWhite", Ogre::RenderOperation::OT_TRIANGLE_LIST);
+            
+            // Define vertices for a unit cube (1x1x1 centered at origin)
+            const float s = 0.5f; // half size
+            
+            // Front face (z = s)
+            manual->position(-s, -s, s); manual->normal(0, 0, 1); manual->textureCoord(0, 1);
+            manual->position(s, -s, s); manual->normal(0, 0, 1); manual->textureCoord(1, 1);
+            manual->position(s, s, s); manual->normal(0, 0, 1); manual->textureCoord(1, 0);
+            manual->position(-s, s, s); manual->normal(0, 0, 1); manual->textureCoord(0, 0);
+            
+            // Back face (z = -s)
+            manual->position(s, -s, -s); manual->normal(0, 0, -1); manual->textureCoord(0, 1);
+            manual->position(-s, -s, -s); manual->normal(0, 0, -1); manual->textureCoord(1, 1);
+            manual->position(-s, s, -s); manual->normal(0, 0, -1); manual->textureCoord(1, 0);
+            manual->position(s, s, -s); manual->normal(0, 0, -1); manual->textureCoord(0, 0);
+            
+            // Left face (x = -s)
+            manual->position(-s, -s, -s); manual->normal(-1, 0, 0); manual->textureCoord(0, 1);
+            manual->position(-s, -s, s); manual->normal(-1, 0, 0); manual->textureCoord(1, 1);
+            manual->position(-s, s, s); manual->normal(-1, 0, 0); manual->textureCoord(1, 0);
+            manual->position(-s, s, -s); manual->normal(-1, 0, 0); manual->textureCoord(0, 0);
+            
+            // Right face (x = s)
+            manual->position(s, -s, s); manual->normal(1, 0, 0); manual->textureCoord(0, 1);
+            manual->position(s, -s, -s); manual->normal(1, 0, 0); manual->textureCoord(1, 1);
+            manual->position(s, s, -s); manual->normal(1, 0, 0); manual->textureCoord(1, 0);
+            manual->position(s, s, s); manual->normal(1, 0, 0); manual->textureCoord(0, 0);
+            
+            // Top face (y = s)
+            manual->position(-s, s, s); manual->normal(0, 1, 0); manual->textureCoord(0, 1);
+            manual->position(s, s, s); manual->normal(0, 1, 0); manual->textureCoord(1, 1);
+            manual->position(s, s, -s); manual->normal(0, 1, 0); manual->textureCoord(1, 0);
+            manual->position(-s, s, -s); manual->normal(0, 1, 0); manual->textureCoord(0, 0);
+            
+            // Bottom face (y = -s)
+            manual->position(-s, -s, -s); manual->normal(0, -1, 0); manual->textureCoord(0, 1);
+            manual->position(s, -s, -s); manual->normal(0, -1, 0); manual->textureCoord(1, 1);
+            manual->position(s, -s, s); manual->normal(0, -1, 0); manual->textureCoord(1, 0);
+            manual->position(-s, -s, s); manual->normal(0, -1, 0); manual->textureCoord(0, 0);
+            
+            // Define indices (2 triangles per face = 6 faces * 2 * 3 = 36 indices)
+            for (int face = 0; face < 6; ++face) {
+                const int base = face * 4;
+                manual->triangle(base, base + 1, base + 2);
+                manual->triangle(base, base + 2, base + 3);
+            }
+            
+            manual->end();
+            
+            // Convert to mesh - this creates a shared mesh resource
+            Ogre::MeshPtr mesh = manual->convertToMesh("ProgrammaticCube", 
+                Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+            
+            // The mesh needs proper bounding box
+            mesh->_setBounds(Ogre::AxisAlignedBox(-s, -s, -s, s, s, s));
+            mesh->_setBoundingSphereRadius(s * Ogre::Math::Sqrt(3.0f)); // diagonal of cube
+            
+            scene_mgr->destroyManualObject(manual);
+        }
+
+        // Create unit sphere mesh using UV sphere algorithm
+        {
+            const int rings = 16;
+            const int segments = 16;
+            const float radius = 0.5f;
+            
+            Ogre::ManualObject* manual = scene_mgr->createManualObject();
+            // Use BaseWhite material which can be overridden
+            manual->begin("BaseWhite", Ogre::RenderOperation::OT_TRIANGLE_LIST);
+            
+            // Generate sphere vertices
+            for (int ring = 0; ring <= rings; ++ring) {
+                const float theta = ring * Ogre::Math::PI / rings;
+                const float sin_theta = Ogre::Math::Sin(theta);
+                const float cos_theta = Ogre::Math::Cos(theta);
+                
+                for (int seg = 0; seg <= segments; ++seg) {
+                    const float phi = seg * 2.0f * Ogre::Math::PI / segments;
+                    const float sin_phi = Ogre::Math::Sin(phi);
+                    const float cos_phi = Ogre::Math::Cos(phi);
+                    
+                    const float x = radius * sin_theta * cos_phi;
+                    const float y = radius * cos_theta;
+                    const float z = radius * sin_theta * sin_phi;
+                    
+                    manual->position(x, y, z);
+                    manual->normal(x / radius, y / radius, z / radius); // normalized position is the normal
+                    manual->textureCoord(static_cast<float>(seg) / segments, static_cast<float>(ring) / rings);
+                }
+            }
+            
+            // Generate sphere indices
+            for (int ring = 0; ring < rings; ++ring) {
+                for (int seg = 0; seg < segments; ++seg) {
+                    const int current = ring * (segments + 1) + seg;
+                    const int next = current + segments + 1;
+                    
+                    manual->triangle(current, next, current + 1);
+                    manual->triangle(current + 1, next, next + 1);
+                }
+            }
+            
+            manual->end();
+            
+            // Convert to mesh - this creates a shared mesh resource
+            Ogre::MeshPtr mesh = manual->convertToMesh("ProgrammaticSphere", 
+                Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+            
+            // The mesh needs proper bounding box
+            mesh->_setBounds(Ogre::AxisAlignedBox(-radius, -radius, -radius, radius, radius, radius));
+            mesh->_setBoundingSphereRadius(radius);
+            
+            scene_mgr->destroyManualObject(manual);
+        }
+    }
+}
+
 GameWorld& GameWorld::instance() {
     static GameWorld instance;  // Meyer's singleton - thread-safe since C++11
     return instance;
@@ -20,6 +156,13 @@ GameWorld::GameWorld()
 }
 
 void GameWorld::create_scene() {
+    // Create primitive meshes FIRST before anything tries to use them
+    create_primitive_meshes(Common::scene_manager);
+    
+    // Disable all debug visualization globally
+    Common::scene_manager->setDisplaySceneNodes(false);
+    Common::scene_manager->showBoundingBoxes(false);
+    
     // Set up dramatic lighting system to compensate for fixed function pipeline
     Common::scene_manager->setShadowTechnique(Ogre::SHADOWTYPE_NONE);
     Common::overview_scene_manager->setShadowTechnique(Ogre::SHADOWTYPE_NONE);
@@ -48,37 +191,35 @@ void GameWorld::create_scene() {
     }
     
     // load details from Map file and start creating
-    const std::vector<BrushInfo*>& brushes = maps_[current_map_index_]->get_brushes();
-    const std::vector<LightInfo*>& lights = maps_[current_map_index_]->get_lights();
-    const std::vector<EntityInfo*>& entities = maps_[current_map_index_]->get_entities();
+    const auto& brushes = maps_[current_map_index_]->get_brushes();
+    const auto& lights = maps_[current_map_index_]->get_lights();
+    const auto& entities = maps_[current_map_index_]->get_entities();
 
-    // the order in which they are loaded is not important, so we can do this in O(n) time instead of O(3n) by using:
-    size_t max = std::max(std::max(lights.size(), brushes.size()), entities.size());
- 
-    for (size_t i = 0; i < max; ++i) {
-        if (i < brushes.size()) {
-            create_brush(brushes.at(i));
-        }
-        
-        if (i < lights.size()) {
-            create_light(lights.at(i));
-        }
+    // Create brushes
+    for (const auto& brush : brushes) {
+        create_brush(brush.get());
+    }
+    
+    // Create lights
+    for (const auto& light : lights) {
+        create_light(light.get());
+    }
+    
+    // Create entities
+    for (const auto& entity : entities) {
+        switch (entity->type) {
+            case (EntityType::PlayerEntity):
+                create_player(entity.get());
+                break;
 
-        if (i < entities.size()) {
-            switch (entities.at(i)->type) {
-                case (EntityType::PlayerEntity):
-                    create_player(entities.at(i));
-                    break;
+            case (EntityType::EnemyFlying):
+            case (EntityType::EnemyStationary):
+            case (EntityType::EnemyPatrol):
+                create_enemy(entity.get());
+                break;
 
-                case (EntityType::EnemyFlying):
-                case (EntityType::EnemyStationary):
-                case (EntityType::EnemyPatrol):
-                    create_enemy(entities.at(i));
-                    break;
-
-                default:
-                    break;
-            }
+            default:
+                break;
         }
     }
     
@@ -126,14 +267,13 @@ void GameWorld::create_light(const LightInfo* const light) {
  *  Be careful not to use 'type', use 'brush_type'.
  */
 void GameWorld::create_brush(const BrushInfo* const brush) {
-    // TEMPORARY: Go back to PT_CUBE but force manual mesh creation with proper normals
-    Ogre::Entity* brush_entity = Common::scene_manager->createEntity(brush->id, Ogre::SceneManager::PT_CUBE);
+    Ogre::Entity* brush_entity = Common::scene_manager->createEntity(brush->id, "ProgrammaticCube");
     
     // Use original materials for all brushes - no custom shaders for now
     brush_entity->setMaterialName(brush->material_name);
     
     brush_entity->setCastShadows(brush->cast_shadows);
-    brush_entity->setQueryFlags(static_cast<Ogre::uint32>(QueryFlags::Wall));
+    brush_entity->setQueryFlags(to_ogre_flags(QueryFlags::Wall));
     
     // create SceneNode
     Ogre::SceneNode* node = Common::scene_manager->getRootSceneNode()->createChildSceneNode();
@@ -143,8 +283,8 @@ void GameWorld::create_brush(const BrushInfo* const brush) {
     node->setPosition(Ogre::Vector3(brush->position.x + brush->dimensions.x / 2.0f,
                                     brush->position.y + brush->dimensions.y / 2.0f,
                                     brush->position.z + brush->dimensions.z / 2.0f));
-    // prefab cube is 100x100x100, so we need to resize it to match the requested coordinates
-    node->setScale(brush->dimensions * 0.01f);
+    // unit cube is 1x1x1, so we need to scale it to match the requested dimensions
+    node->setScale(brush->dimensions);
 
     auto brush_user = std::make_unique<BrushEntity>(brush_entity, node, brush->brush_type);
     brush_user->set_type(EntityType::Brush);
@@ -157,7 +297,7 @@ void GameWorld::create_brush(const BrushInfo* const brush) {
     // overview: Create simple colored boxes to represent level geometry
     // Don't use the same materials to avoid conflicts with main scene
     if (brush->brush_type != BrushType::Ceiling && brush->brush_type != BrushType::Floor) {
-        Ogre::Entity* brush_overview = Common::overview_scene_manager->createEntity(brush->id + "_overview", "cube.mesh");
+        Ogre::Entity* brush_overview = Common::overview_scene_manager->createEntity(brush->id + "_overview", "ProgrammaticCube");
         
         // All materials are now in General resource group (examples.material file)
         std::string overview_material = "GameOverview/Gray";
@@ -183,8 +323,8 @@ void GameWorld::create_brush(const BrushInfo* const brush) {
                                                 brush->position.y + brush->dimensions.y / 2.0f,
                                                 brush->position.z + brush->dimensions.z / 2.0f));
         
-        // Scale down by factor of 0.01 (1%) for much smaller overview size
-        float overview_scale = 0.01f;
+        // Scale down by factor of 1.0 (was 0.01 for old 100-unit cube.mesh, now using 1-unit ProgrammaticCube)
+        float overview_scale = 1.0f;  // Changed from 0.01f to account for unit cube vs 100-unit mesh
         float min_visible_size = 2.0f; // Minimum size for narrow objects like columns
         
         // For start/exit areas, make them taller so they're more visible
@@ -222,8 +362,8 @@ void GameWorld::create_enemy(const EntityInfo* const enemy) {
         try {
             EnemyFactory::instance().create_enemy(enemy->id, enemy->type, enemy->position);
         }
-        catch (Ogre::Exception& e) {
-            std::cerr << e.what() << std::endl;
+        catch (std::exception& e) {
+            std::cerr << e.what() << '\n';
         }
     }
 }
@@ -238,7 +378,7 @@ void GameWorld::create_player(const EntityInfo* player) {
     player_ptr->set_direction(player->direction);
     
     // Create sphere indicator for player on overview map
-    Ogre::Entity* player_indicator = Common::overview_scene_manager->createEntity("PlayerIndicator", "sphere.mesh");
+    Ogre::Entity* player_indicator = Common::overview_scene_manager->createEntity("PlayerIndicator", "ProgrammaticSphere");
     player_indicator->setMaterialName("Examples/Red", "General"); // Use examples.material from General group
     player_indicator->setCastShadows(false);
     
@@ -246,8 +386,8 @@ void GameWorld::create_player(const EntityInfo* player) {
     auto* rotated_root = Common::overview_scene_manager->getSceneNode("OverviewRotatedRoot");
     Ogre::SceneNode* player_overview_node = rotated_root->createChildSceneNode("PlayerOverviewNode");
     player_overview_node->attachObject(player_indicator);
-    // Scale player indicator to be visible on the overview map
-    player_overview_node->setScale(Ogre::Vector3(3.0f, 3.0f, 3.0f)); 
+    // Scale player indicator to be visible on the overview map (increased from 3.0 to 300.0 for unit sphere)
+    player_overview_node->setScale(Ogre::Vector3(300.0f, 300.0f, 300.0f)); 
     player_overview_node->setPosition(player->position);
     
     // Keep raw pointer in Common for global access (we still own it via unique_ptr)
@@ -258,11 +398,13 @@ void GameWorld::create_player(const EntityInfo* player) {
 void GameWorld::destroy_scene() {
     abort_update(); // halt updating
     
-    // unique_ptr automatically deletes
-    entities_.clear();   
+    // Clear Common::player BEFORE clearing entities to prevent dangling pointer
+    Common::player = nullptr;
+    
     brushes_.clear();
+    entities_.clear();
     overview_brushes_.clear(); // Clear overview brush tracking
-     
+    
     // tell Ogre to destroy all entities, lights and scenenodes
     Common::scene_manager->clearScene(); 
     Common::overview_scene_manager->clearScene();
@@ -319,15 +461,9 @@ void GameWorld::register_entity(std::unique_ptr<GameEntity> entity) {
 }
 
 void GameWorld::destroy_entity(GameEntity* const entity) {
-    auto it = entities_.begin();
-
-    while (it != entities_.end()) {
-        if (it->get() == entity) {
-            entities_.erase(it); // unique_ptr automatically deletes
-            break;
-        }
-        ++it;
-    }
+    std::erase_if(entities_, [entity](const auto& e) {
+        return e.get() == entity;
+    });
 }
 
 void GameWorld::update(const Ogre::Real& elapsed) {
@@ -337,7 +473,7 @@ void GameWorld::update(const Ogre::Real& elapsed) {
     }
     
     // Update spotlight position AND orientation to follow camera exactly every frame
-    if (test_spotlight_node_ != nullptr) {
+    if (test_spotlight_node_) {
         // Update position to camera position
         test_spotlight_node_->setPosition(Common::camera->getDerivedPosition());
         
@@ -347,36 +483,25 @@ void GameWorld::update(const Ogre::Real& elapsed) {
     }
 
     if (current_map_index_ > 0 && current_map_index_ <= maps_.size()) {
-        auto it = entities_.begin();
-        Ogre::uint i = 0; // used for manually resetting the iterator when required
-
-        while (it != entities_.end()) {
-            if (*it != nullptr) {
-                if ((*it)->is_alive()) { 
-                    // might kill the object, so it will be removed the next time our update is called
-                    (*it)->update(elapsed);
-                    
-                    // stop this instant, the iterator is invalid as the scene has been cleared or something similar
-                    if (abort_updates_)  {
-                        return;
-                    }
-                    
-                    ++it;
-                    ++i;
-
-                    // all is fine, continue with the next entity
-                    continue;
-                } 
+        // Process entities - remove dead/null entities and update alive ones
+        std::erase_if(entities_, [this, elapsed](auto& entity) {
+            if (!entity || !entity->is_alive()) {
+                return true; // Remove dead or null entities
             }
             
-            // if all is not fine (entity is nullptr or dead), remove it
-            destroy_entity(it->get());
-
-            // reset the iterator (see destroy_entity for details)
-            it = entities_.begin();
-
-            // the item is removed from the list, so we want to go back to i
-            std::advance(it, i);     
+            entity->update(elapsed);
+            
+            // If update triggered abort, stop processing but don't remove this entity
+            if (abort_updates_) {
+                return false;
+            }
+            
+            return false; // Keep alive entities
+        });
+        
+        // Early return if updates were aborted during entity processing
+        if (abort_updates_) {
+            return;
         }
     }
 }
@@ -468,13 +593,15 @@ void GameWorld::update_overview_visibility(float player_y) {
         bool starts_at_floor = std::abs(brush.min_y - nearest_floor_below) < floor_snap_tolerance;
         
         // Or if wall bottom is slightly below floor (floor-to-floor walls)
-        bool spans_floor = (brush.min_y <= nearest_floor_below + floor_snap_tolerance) 
-                        && (brush.max_y >= nearest_floor_below);
+        bool spans_floor = 
+            (brush.min_y <= nearest_floor_below + floor_snap_tolerance) && 
+            (brush.max_y >= nearest_floor_below);
         
         // Show if wall is part of current floor and not too tall above it
-        bool isCurrentFloorWall = (starts_at_floor || spans_floor) 
-                               && (brush.max_y <= nearest_floor_below + ceiling_height);
+        bool is_current_floor_wall = 
+            (starts_at_floor || spans_floor) && 
+            (brush.max_y <= nearest_floor_below + ceiling_height);
         
-        brush.node->setVisible(isCurrentFloorWall);
+        brush.node->setVisible(is_current_floor_wall);
     }
 }

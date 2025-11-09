@@ -7,25 +7,24 @@
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
 #ifdef _WIN32
     // Set OGRE_CONFIG_DIR to the executable's directory so Ogre loads ogre.cfg from there
-    char exePath[MAX_PATH];
-    GetModuleFileNameA(NULL, exePath, MAX_PATH);
-    std::string exeDir(exePath);
-    size_t lastSlash = exeDir.find_last_of("\\/");
-    if (lastSlash != std::string::npos) {
-        exeDir = exeDir.substr(0, lastSlash);
+    char exe_path[MAX_PATH];
+    GetModuleFileNameA(NULL, exe_path, MAX_PATH);
+    std::string exe_dir(exe_path);
+    size_t last_slash = exe_dir.find_last_of("\\/");
+    if (last_slash != std::string::npos) {
+        exe_dir = exe_dir.substr(0, last_slash);
     }
     // Add trailing slash as standardisePath expects
-    exeDir += "\\";
-    SetEnvironmentVariableA("OGRE_CONFIG_DIR", exeDir.c_str());
+    exe_dir += "\\";
+    SetEnvironmentVariableA("OGRE_CONFIG_DIR", exe_dir.c_str());
 #endif
 
-    Game* game = Game::instance(); // create main game class
-
+    Game& game = Game::instance();
     try { 
-        game->run();
+        game.run();
     } 
     catch (Ogre::Exception& e) {
-        std::cerr << "An exception has occurred: " << e.getFullDescription() << std::endl;
+        std::cerr << "An exception has occurred: " << e.getFullDescription() << '\n';
     }
     
     return 0;

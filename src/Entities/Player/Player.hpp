@@ -23,7 +23,7 @@ public:
 	Player(Ogre::SceneNode* const player_node);
 
 public: 
-	void update(const Ogre::Real& elapsed);
+	void update(const Ogre::Real& elapsed) override;
 	void reset_position();
     void stop_movement();
 
@@ -35,10 +35,11 @@ public:
 	void inject_mouse_up(const OgreBites::MouseButtonEvent& event);
 
 	// GETTERS/SETTERS
-    const Ogre::uint get_health() { 
+    [[nodiscard]] Ogre::uint get_health() const { 
 		return health_;
 	}
-	const Ogre::uint get_score() { 
+
+	[[nodiscard]] Ogre::uint get_score() const { 
 		return credits_;
 	}
 	
@@ -47,11 +48,13 @@ public:
 			health_ = health;
 		}
 	}
+
 	void add_points(const Ogre::uint value) { 
 		if (value > 0) {
 			credits_ += value;
 		}
 	}
+
 	void set_score(const Ogre::uint score) { 
 		credits_ = score;
 	}
@@ -89,6 +92,8 @@ private:
 	bool roll_left_;
 	bool roll_right_;
 	bool shooting_;
+	
+	bool exit_triggered_;  // Track if we've already triggered exit to prevent double-trigger
 
 	// math
 	Ogre::Real top_speed_;

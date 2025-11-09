@@ -16,7 +16,13 @@ class Game
 : public OgreBites::ApplicationContext
 , public OgreBites::InputListener {
 public:
-    static Game* instance();
+    static Game& instance();
+	
+	// Delete copy and move operations (singleton pattern)
+	Game(const Game&) = delete;
+	Game& operator=(const Game&) = delete;
+	Game(Game&&) = delete;
+	Game& operator=(Game&&) = delete;
 	
 public:
 	void load_map(int map_id);
@@ -26,7 +32,6 @@ public:
     void run();
 
 private: // singleton
-	static Game* instance_;
 	Game();
 	~Game();
 
@@ -66,6 +71,7 @@ private:
 	// GAME SPECIFIC
 	bool map_mode_;
 	bool shutdown_requested_;
+	bool map_transition_pending_;  // Defer map transition until next frame
 	Ogre::Real time_left_;
 	
 	// config files

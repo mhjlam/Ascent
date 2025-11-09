@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+#include <vector>
 #include <Ogre.h>
 
 #include "Constants.hpp"
@@ -57,16 +59,16 @@ public: // setters
     }
 
 public: // getters
-    const std::vector<LightInfo*>& get_lights() {
+    [[nodiscard]] const std::vector<std::unique_ptr<LightInfo>>& get_lights() const {
         return lights_;
     }
-    const std::vector<BrushInfo*>& get_brushes() {
+    [[nodiscard]] const std::vector<std::unique_ptr<BrushInfo>>& get_brushes() const {
         return brushes_;
     }
-    const std::vector<EntityInfo*>& get_entities() {
+    [[nodiscard]] const std::vector<std::unique_ptr<EntityInfo>>& get_entities() const {
         return entities_;
     }
-    const MapInfo& get_map_info() { 
+    [[nodiscard]] const MapInfo& get_map_info() const { 
         return map_info_;
     }
 
@@ -114,9 +116,9 @@ private:
 private:
     MapInfo map_info_;
     
-    std::vector<LightInfo*> lights_;
-    std::vector<BrushInfo*> brushes_;
-    std::vector<EntityInfo*> entities_;
+    std::vector<std::unique_ptr<LightInfo>> lights_;
+    std::vector<std::unique_ptr<BrushInfo>> brushes_;
+    std::vector<std::unique_ptr<EntityInfo>> entities_;
     
     Ogre::String floor_material_;
     Ogre::String ceiling_material_;

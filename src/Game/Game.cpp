@@ -21,13 +21,9 @@
 #include "Entities/Player/Player.hpp"
 
 
-Game* Game::instance_ = nullptr;
-
-Game* Game::instance() {
-	if (instance_ == nullptr) {
-		instance_ = new Game();
-	}
-	return instance_;
+Game& Game::instance() {
+	static Game instance;  // Meyer's singleton - thread-safe since C++11, automatically destroyed at program exit
+	return instance;
 }
 
 
@@ -36,6 +32,7 @@ Game::Game()
 , resource_config_("resources.cfg")
 , map_mode_(false)
 , shutdown_requested_(false)
+, map_transition_pending_(false)
 , time_left_(180.0f)
 , overlay_system_(nullptr)
 , loading_bar_(nullptr)
@@ -46,7 +43,7 @@ Game::Game()
 }
 
 Game::~Game() {
-    // unique_ptr automatically deletes maps, no manual deletion needed
+    // unique_ptr automatically deletes loading_bar_
 
     // unload and destroy world - Meyer's singleton will be automatically destroyed
     GameWorld::instance().clear_map();
@@ -59,11 +56,6 @@ Game::~Game() {
 	
 	// Don't delete overlay_system_ - it's owned by ApplicationContext
 	// Don't delete Ogre objects - managed by ApplicationContext
-
-	if (instance_) {
-		delete instance_;
-		instance_ = nullptr;
-	}
 }
 
 void Game::createRoot() {
@@ -103,7 +95,7 @@ void Game::createRoot() {
 					render_system->setConfigOption(setting.first, setting.second);
 				}
 				catch (...) {
-					std::cerr << "Failed to set option: " << setting.first << " = " << setting.second << std::endl;
+					std::cerr << "Failed to set option: " << setting.first << " = " << setting.second << '\n';
 				}
 			}
 			
@@ -112,7 +104,7 @@ void Game::createRoot() {
 		}
 	}
 	else {
-		std::cerr << "Config file not found at: " << config_path << std::endl;
+		std::cerr << "Config file not found at: " << config_path << '\n';
 	}
 }
 
@@ -155,10 +147,10 @@ void Game::setup() {
 			shader_generator->setShaderCachePath("");
 		}
 		else {
-			std::cerr << "RTSS: Failed to initialize" << std::endl;
+			std::cerr << "RTSS: Failed to initialize\n";
 		}
 	} catch (const std::exception& e) {
-		std::cerr << "RTSS: Exception: " << e.what() << std::endl;
+		std::cerr << "RTSS: Exception: " << e.what() << '\n';
 	}
 	
 	// Get the OverlaySystem singleton (ApplicationContext creates it)
@@ -207,7 +199,7 @@ void Game::setup_scene_managers() {
 		shader_generator->addSceneManager(Common::scene_manager);
 		shader_generator->addSceneManager(Common::overview_scene_manager);
 	} else {
-		std::cerr << "RTSS: ShaderGenerator not available - using fixed function" << std::endl;
+		std::cerr << "RTSS: ShaderGenerator not available - using fixed function\n";
 	}
 	
 	// Disable shadows for simplicity (as in the original code)
@@ -338,11 +330,10 @@ void Game::setup_resources() {
     while (sit.hasMoreElements()) {
         section_name = sit.peekNextKey();
         Ogre::ConfigFile::SettingsMultiMap* settings = sit.getNext();
-        Ogre::ConfigFile::SettingsMultiMap::iterator it;
         
-		for (it = settings->begin(); it != settings->end(); ++it) {
-            type_name = it->first;
-            arch_name = expand_env_vars(it->second); // Expand environment variables
+		for (const auto& [type, arch] : *settings) {
+            type_name = type;
+            arch_name = expand_env_vars(arch); // Expand environment variables
             Ogre::ResourceGroupManager::getSingleton().addResourceLocation(arch_name, type_name, section_name);
         }
     }
@@ -392,6 +383,7 @@ void Game::create_world() {
     GameWorld::instance().register_map(std::make_unique<LevelTwo>());
     GameWorld::instance().load_next_map(); // will load first map
     time_left_ = 180.0f;
+    map_transition_pending_ = false;  // Ensure clean state at game start
     
     // Don't show notification here - it will be shown in setup()
 }
@@ -401,6 +393,7 @@ void Game::trigger_map_restart() {
     time_left_ = 180.0f;
     game_over_ = false;
     player_died_ = false;
+    map_transition_pending_ = false;  // Clear any pending transition
     
     // Hide game over screen if it's showing
     GameOverScreen::instance().hide();
@@ -428,36 +421,11 @@ void Game::trigger_map_restart() {
 
 // end the current map
 void Game::trigger_map_end() {
-	Common::game_state.clear_dead_enemies();
-	
-    time_left_ = 180.0f;
-    
-    if (map_mode_) {
-        swap_view();
-	}
-    
-    if (GameWorld::instance().has_more_maps()) {
-        // Show loading screen for next level
-        if (loading_bar_) {
-            loading_bar_->show_level_loading(Common::render_window, "Loading Next Level...");
-        }
-        
-        GameWorld::instance().load_next_map();
-        
-        // Hide loading screen
-        if (loading_bar_) {
-            loading_bar_->hide_level_loading();
-        }
-        
-        // Show level notification
-        int current_level = static_cast<int>(GameWorld::instance().get_current_map_index()) + 1;
-        NotificationManager::instance().show_level_notification(current_level);
-    }
-	else {
-        // Game completed - show victory screen
-        game_over_ = true;
-        int final_score = Common::player ? Common::player->get_score() : 0;
-        GameOverScreen::instance().show_victory_screen(final_score, has_save_file_);
+    // Don't immediately transition - set flag to defer until next frame
+    // This prevents destroying the player while it's still executing update()
+    // Only set the flag if not already pending (prevent double-trigger)
+    if (!map_transition_pending_) {
+        map_transition_pending_ = true;
     }
 }
 
@@ -469,6 +437,45 @@ bool Game::frameRenderingQueued(const Ogre::FrameEvent& event) {
 
 	if (shutdown_requested_) {
 		return false;
+	}
+
+	// Handle deferred map transition FIRST, before any updates
+	if (map_transition_pending_) {
+		map_transition_pending_ = false;
+		
+		Common::game_state.clear_dead_enemies();
+		time_left_ = 180.0f;
+		game_over_ = false;      // Reset game over state for new level
+		player_died_ = false;    // Reset death state for new level
+		
+		if (map_mode_) {
+			swap_view();
+		}
+		
+		// Check if there are more maps BEFORE loading (index hasn't been incremented yet)
+		if (GameWorld::instance().has_more_maps()) {
+			// Show loading screen for next level
+			if (loading_bar_) {
+				loading_bar_->show_level_loading(Common::render_window, "Loading Next Level...");
+			}
+			
+			GameWorld::instance().load_next_map();
+			
+			// Hide loading screen
+			if (loading_bar_) {
+				loading_bar_->hide_level_loading();
+			}
+			
+			// Show level notification
+			int current_level = static_cast<int>(GameWorld::instance().get_current_map_index()) + 1;  // +1 for display (1-based)
+			NotificationManager::instance().show_level_notification(current_level);
+		}
+		else {
+			// No more maps - game completed, show victory screen
+			game_over_ = true;
+			int final_score = Common::player ? Common::player->get_score() : 0;
+			GameOverScreen::instance().show_victory_screen(final_score, has_save_file_);
+		}
 	}
 
 	// Update notification manager
@@ -664,7 +671,7 @@ void Game::load() {
 	
 	// Check if save file exists
 	if (!ifs.good()) {
-		std::cerr << "No save file found!" << std::endl;
+		std::cerr << "No save file found!\n";
 		return;
 	}
 	
@@ -687,13 +694,14 @@ void Game::load() {
 		// Reset game over state
 		game_over_ = false;
 		player_died_ = false;
+		map_transition_pending_ = false;  // Clear any pending transition
 		GameOverScreen::instance().hide();
 		
 		// Show load notification
 		NotificationManager::instance().show_load_notification();
 	}
 	catch (const std::exception& e) {
-		std::cerr << "Error loading save file: " << e.what() << std::endl;
+		std::cerr << "Error loading save file: " << e.what() << '\n';
 		if (loading_bar_) {
 			loading_bar_->hide_level_loading();
 		}
@@ -713,6 +721,7 @@ bool Game::keyPressed(const OgreBites::KeyboardEvent& event) {
 			// Restart game from level 1
 			game_over_ = false;
 			player_died_ = false;
+			map_transition_pending_ = false;  // Clear any pending transition
 			GameOverScreen::instance().hide();
 			
 			// Reset to first level

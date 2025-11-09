@@ -9,12 +9,12 @@
 
 void GameState::load() {
 	// first load the proper map
-	Game::instance()->load_map(current_level_);
+	Game::instance().load_map(current_level_);
 
 	// restore the saved values in that map
 	Common::player->set_health(player_health_);
 	Common::player->set_position(player_position_);
-	Game::instance()->set_time_left(time_left_);
+	Game::instance().set_time_left(time_left_);
 	Common::player->set_score(score_);
 	Common::player->get_node()->setOrientation(player_orientation_);
 }
@@ -48,12 +48,7 @@ void GameState::add_dead_enemy(std::string enemy_id) {
 }
 
 bool GameState::is_dead(std::string target_enemy_id) {
-	for (auto& enemy_id : dead_enemies_) {
-		if (enemy_id == target_enemy_id) {
-			return true;
-		}
-	}
-	return false;
+	return std::ranges::find(dead_enemies_, target_enemy_id) != dead_enemies_.end();
 }
 
 void GameState::clear_dead_enemies() {

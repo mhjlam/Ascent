@@ -1,7 +1,10 @@
+// Modern scalable TrueType font definition
+// Size can be set at runtime when creating text elements
 font BlueHighway
 {
 	type 		truetype
 	source 		bluehigh.ttf
-	size 		32
-	resolution 	55
+	size 		16
+	resolution 	96
+	antialias_colour true
 }

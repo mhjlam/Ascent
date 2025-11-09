@@ -13,6 +13,6 @@ PlayerProjectile::PlayerProjectile(Ogre::Entity* const entity,
 								   const Ogre::Quaternion& orientation)
 : Projectile(entity, node, direction, orientation) {
 	damage_ = 25;
-	speed_ = 7500.0f;
+	speed_ = 8000.0f;
 	range_ = 5000.0f;
 }

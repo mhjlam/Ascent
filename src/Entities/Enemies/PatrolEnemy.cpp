@@ -27,16 +27,14 @@ void PatrolEnemy::update(const Ogre::Real& elapsed) {
 	Enemy::update(elapsed);
 
 	// when not shooting, walk
-	if (animation_state_->getAnimationName() == "Walk") {
+	if (animation_state_ && animation_state_->getAnimationName() == "Walk") {
 		Ogre::Real move = speed_ * elapsed;
-        target_distance_ -= move;
+		target_distance_ -= move;
 
 		if (target_distance_ <= 0.0f) {
-            main_node_->setPosition(target_position_);
-			// if there's no new target, move to the first patrol point
-			if (++target_ >= (int)patrol_points_.size()) {
-				target_ = 0;
-			}
+			main_node_->setPosition(target_position_);
+			// cycle to next patrol point
+			target_ = (target_ + 1) % patrol_points_.size();
 			set_target(patrol_points_[target_]);
 		} 
 		else {
@@ -46,7 +44,10 @@ void PatrolEnemy::update(const Ogre::Real& elapsed) {
 }
 
 void PatrolEnemy::get_default_anim_state() {
-	animation_state_ = entity_->getAnimationState("Walk");
-    animation_state_->setLoop(true);
-    animation_state_->setEnabled(true);
+	// Check if entity has animations before accessing animation state
+	if (entity_->hasSkeleton() && entity_->getSkeleton()->hasAnimation("Walk")) {
+		animation_state_ = entity_->getAnimationState("Walk");
+		animation_state_->setLoop(true);
+		animation_state_->setEnabled(true);
+	}
 }

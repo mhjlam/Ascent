@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Ogre.h>
+
 enum class BrushType {
 	Ceiling,
 	Wall,
@@ -18,7 +20,7 @@ enum class EntityType {
 	PlayerProjectileType, // Renamed to avoid conflict with class PlayerProjectile
 };
 
-enum class QueryFlags { 
+enum class QueryFlags : Ogre::uint32 { 
 	Wall 				= 1<<0,
 	Enemy 				= 1<<1,
 	EnemyProjectile 	= 1<<2,
@@ -35,22 +37,7 @@ constexpr bool operator==(QueryFlags a, QueryFlags b) {
 	return static_cast<int>(a) == static_cast<int>(b);
 }
 
-namespace Ascent {
-	struct delete_ptr {
-		template <typename T>
-		void operator()(T& p) {
-			if (p) {
-				delete p;
-				p = nullptr;
-			}
-		}
-	};
-
-	template <typename T, typename U>
-	struct pair {
-		T first;
-		U second;
-
-		pair(T t, U u) : first(t), second(u) {}
-	};
+// Helper to convert QueryFlags to Ogre::uint32
+constexpr Ogre::uint32 to_ogre_flags(QueryFlags flags) {
+	return static_cast<Ogre::uint32>(flags);
 }

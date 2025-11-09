@@ -6,7 +6,7 @@
 #include "Common.hpp"
 #include "Map/GameWorld.hpp"
 #include "Entities/Player/Player.hpp"
-#include "Projectiles/ProjectileFactory.hpp"
+#include "Entities/Projectiles/ProjectileFactory.hpp"
 
 
 FlyingEnemy::FlyingEnemy(Ogre::Entity* entity, Ogre::SceneNode* node)
@@ -31,23 +31,14 @@ void FlyingEnemy::update(const Ogre::Real& elapsed) {
 		static std::uniform_int_distribution<> distrib(0, 5);
 		Ogre::uint num = distrib(gen);
 
-		if (num < 1) {
-			target.y += 200;
+		const int direction = num % 3; // 0, 1, or 2
+		const int sign = (num < 3) ? 1 : -1;
+		
+		if (direction == 0) {
+			target.y += sign * 200;
 		}
-		else if (num < 2) {
-			target.y -= 200;
-		}
-		else if (num < 3) {
-			target.x += 200;
-		}
-		else if (num < 4) {
-			target.x -= 200;
-		}
-		else if (num < 5) {
-			target.x += 200;
-		}
-		else if (num < 6) {
-			target.x -= 200;
+		else {
+			target.x += sign * 200;
 		}
 
 		set_target(target);

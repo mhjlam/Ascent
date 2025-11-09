@@ -10,7 +10,7 @@
 
 
 EnemyFactory& EnemyFactory::instance() {
-	static EnemyFactory instance;  // Meyer's singleton - thread-safe since C++11
+	static EnemyFactory instance;
 	return instance;
 }
 
@@ -32,7 +32,7 @@ void EnemyFactory::create_enemy(const Ogre::String& name, EntityType enemy_type,
 	}
 	
 	enemy_entity->setCastShadows(true);
-	enemy_entity->setQueryFlags(static_cast<Ogre::uint32>(QueryFlags::Enemy));	
+	enemy_entity->setQueryFlags(to_ogre_flags(QueryFlags::Enemy));	
 
 	Ogre::SceneNode* enemy_node = Common::scene_manager->getRootSceneNode()->createChildSceneNode(name + "Node", position);
 	enemy_node->attachObject(enemy_entity);

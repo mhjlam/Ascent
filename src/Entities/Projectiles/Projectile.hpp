@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Constants.hpp"
-
 #include "Entities/GameEntity.hpp"
 
 
@@ -11,10 +10,10 @@ public:
 			   Ogre::SceneNode* const node, 
 			   const Ogre::Vector3& direction, 
 			   const Ogre::Quaternion& orientation);
-	virtual ~Projectile() = default;
+	~Projectile() override = default;
 
 public:
-    virtual void update(const Ogre::Real& elapsed);
+    void update(const Ogre::Real& elapsed) override;
 
 protected:
 	Ogre::uint damage_;
