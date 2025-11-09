@@ -1,0 +1,97 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Configure Debug",
+			"type": "shell",
+			"command": "cmake",
+			"args": ["--preset", "msvc-x64-debug"],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "silent",
+				"focus": false,
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Configure Release",
+			"type": "shell",
+			"command": "cmake",
+			"args": ["--preset", "msvc-x64-release"],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "silent",
+				"focus": false,
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Build Debug",
+			"type": "shell",
+			"command": "cmake",
+			"args": ["--build", "build/debug", "--config", "Debug"],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"dependsOn": "Configure Debug",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			},
+			"problemMatcher": ["$msCompile"]
+		},
+		{
+			"label": "Build Release",
+			"type": "shell",
+			"command": "cmake",
+			"args": ["--build", "build/release", "--config", "Release"],
+			"group": "build",
+			"dependsOn": "Configure Release",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			},
+			"problemMatcher": ["$msCompile"]
+		},
+		{
+			"label": "Clean Debug",
+			"type": "shell",
+			"command": "cmake",
+			"args": ["--build", "build/debug", "--config", "Debug", "--target", "clean"],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Clean All",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-Command",
+				"if (Test-Path 'build') { Remove-Item -Recurse -Force 'build' }; if (Test-Path 'bin') { Remove-Item -Recurse -Force 'bin' }"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		}
+	]
+}

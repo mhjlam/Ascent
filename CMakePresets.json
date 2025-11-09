@@ -1,0 +1,118 @@
+{
+    "version": 3,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 15,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "msvc-x64-debug",
+            "displayName": "MSVC x64 Debug",
+            "description": "Configure with Visual Studio generator, debug build",
+            "generator": "Visual Studio 17 2022",
+            "binaryDir": "${sourceDir}/build/debug",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "msvc-x64-release",
+            "displayName": "MSVC x64 Release",
+            "description": "Configure with Visual Studio generator, release build",
+            "generator": "Visual Studio 17 2022",
+            "binaryDir": "${sourceDir}/build/release",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "ninja-debug",
+            "displayName": "Ninja Debug (Cross-platform)",
+            "description": "Configure with Ninja generator, debug build",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+            },
+            "condition": {
+                "type": "notEquals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "ninja-release",
+            "displayName": "Ninja Release (Cross-platform)",
+            "description": "Configure with Ninja generator, release build",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+            },
+            "condition": {
+                "type": "notEquals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "debug",
+            "displayName": "Build Debug (MSVC)",
+            "description": "Build debug configuration",
+            "configurePreset": "msvc-x64-debug",
+            "configuration": "Debug"
+        },
+        {
+            "name": "release",
+            "displayName": "Build Release (MSVC)",
+            "description": "Build release configuration",
+            "configurePreset": "msvc-x64-release",
+            "configuration": "Release"
+        },
+        {
+            "name": "ninja-debug",
+            "displayName": "Build Debug (Ninja)",
+            "description": "Build debug configuration using Ninja",
+            "configurePreset": "ninja-debug"
+        },
+        {
+            "name": "ninja-release",
+            "displayName": "Build Release (Ninja)",
+            "description": "Build release configuration using Ninja",
+            "configurePreset": "ninja-release"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "debug-launch",
+            "displayName": "Debug Launch",
+            "configurePreset": "msvc-x64-debug",
+            "configuration": "Debug",
+            "execution": {
+                "jobs": 1
+            },
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "release-launch",
+            "displayName": "Release Launch",
+            "configurePreset": "msvc-x64-release",
+            "configuration": "Release",
+            "execution": {
+                "jobs": 1
+            },
+            "output": {
+                "outputOnFailure": true
+            }
+        }
+    ]
+}

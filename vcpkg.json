@@ -1,0 +1,11 @@
+{
+  "name": "gep5",
+  "version": "1.0.0",
+  "description": "Game Engine Programming Assignment 5",
+  "dependencies": [
+    "ogre",
+    "boost-serialization",
+    "boost-algorithm"
+  ],
+  "builtin-baseline": "4334d8b4c8916018600212ab4dd4bbdc343065d1"
+}

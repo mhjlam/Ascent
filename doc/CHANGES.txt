@@ -1,0 +1,41 @@
+*******************************************************************************
+									CHANGES
+*******************************************************************************
+This file lists the changes made to the source code since our presentation on
+Monday, 11 April 2011.
+
+
+**************************
+*    GAMEPLAY RELATED    *
+**************************
+
+1)	Saving and loading (serialization) has been upgraded. 
+	The following is stored:
+		- the current map
+		- player's health
+		- player's position and orientation
+		- player's score
+		- remaining time
+		- remaining enemies
+
+2)	enemies only fire when player is in range
+3)	projectiles now have an indefinite range
+4)	map is restarted when player dies
+5)	updated visuals of projectiles
+
+
+************************
+*    CODE STRUCTURE    *
+************************
+
+1)	GameState class has been added for serialization.
+2)	additions of exception handling
+
+
+***********************
+*    MISCELLANEOUS    *
+***********************
+
+1)	resources are now locally stored (Ogre SDK is no long required to run the game)
+2)	general code cleanup and addition of comments
+3)	optimizations to make the game cycles less CPU intensive

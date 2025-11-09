@@ -1,0 +1,231 @@
+material UI/Crosshair
+{
+    technique
+    {
+        pass
+        {
+            scene_blend alpha_blend
+            texture_unit 
+            {
+                texture textures/crosshair.png
+            }
+        }
+    }
+}
+
+material Plasma/Flare
+{
+    technique
+    {
+        pass
+        {
+            lighting off
+            scene_blend add
+            depth_write off
+            
+            texture_unit
+            {
+                // Use a simple white texture or solid color
+                colour_op_ex source1 src_manual src_current 1 1 1
+            }
+        }
+    }
+}
+
+material TextureColors/Red
+{
+    technique
+    {
+        pass
+        {
+			ambient 1.0 0.1 0.1
+			diffuse 1.0 0.1 0.1
+			emissive 2.5 0.3 0.3  // Strong red plasma glow
+			
+            texture_unit
+			{
+				texture textures/red.jpg
+			}
+        }
+    }
+}
+
+material TextureColors/Green
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.5 0.5 0.5
+
+			texture_unit
+			{
+				texture textures/green.jpg
+			}
+		}
+	}
+}
+
+material TextureColors/Blue
+{
+    technique
+    {
+        pass
+        {
+			ambient 0.1 0.3 1.0
+			diffuse 0.1 0.3 1.0
+			emissive 0.3 0.8 2.5  // Strong blue plasma glow
+		
+            texture_unit
+			{
+				texture textures/blue.jpg
+			}
+        }
+    }
+}
+
+material Ascent/MetalSmall
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.3 0.3 0.3
+			diffuse 0.8 0.8 0.8
+			specular 0.5 0.5 0.5 32
+			
+			texture_unit
+			{
+				texture textures/tread_plate.jpg
+				scale 0.1 0.1
+			}
+		}
+	}
+}
+
+material Ascent/MetalMed
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.3 0.3 0.3
+			diffuse 0.8 0.8 0.8
+			specular 0.5 0.5 0.5 32
+			
+			texture_unit
+			{
+				texture textures/tread_plate.jpg
+				scale 0.3 0.3
+			}
+		}
+	}
+}
+
+material Ascent/SeamlessMetal
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.3 0.3 0.3
+			diffuse 0.8 0.8 0.8
+			specular 0.5 0.5 0.5 32
+			
+			texture_unit
+			{
+				texture textures/sheet_metal.jpg
+				scale 0.3 0.3
+			}
+		}
+	}
+}
+
+material Ascent/SeamlessConcrete
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.3 0.3 0.3
+			diffuse 0.9 0.9 0.9
+			specular 0.1 0.1 0.1 8
+			
+			texture_unit
+			{
+				texture textures/concrete1.jpg
+				scale 0.3 0.3
+			}
+		}
+	}
+}
+
+material Ascent/SeamlessConcrete2
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.3 0.3 0.3
+			diffuse 0.9 0.9 0.9
+			specular 0.1 0.1 0.1 8
+			
+			texture_unit
+			{
+				texture textures/concrete2.jpg
+				scale 0.3 0.3
+			}
+		}
+	}
+}
+
+material Ascent/SeamlessCircuit
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.2 0.2 0.3
+			diffuse 0.7 0.7 0.9
+			specular 0.3 0.3 0.3 16
+			
+			texture_unit
+			{
+				texture textures/circuitry.jpg
+				scale 0.3 0.3
+			}
+		}
+	}
+}
+
+material Ascent/Caution
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.15 0.15 0.05
+			diffuse 0.5 0.5 0.2
+			specular 0.1 0.1 0.05 8
+			
+			texture_unit
+			{
+				texture textures/caution.jpg
+			}
+		}
+		
+		// Emissive glow pass - only where mask is white (yellow stripes)
+		pass
+		{
+			scene_blend add
+			depth_write off
+			lighting off
+			
+			texture_unit
+			{
+				texture textures/caution_emissive.jpg
+				colour_op_ex modulate src_texture src_manual 2.5 2.0 0.0
+			}
+		}
+	}
+}
