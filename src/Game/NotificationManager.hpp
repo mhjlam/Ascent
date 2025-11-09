@@ -23,22 +23,26 @@ public:
 
 public:
 	// Show a notification with specified display time and fade duration
-	void show_level_notification(int levelNumber, float displayTime = 1.5f, float fadeTime = 1.0f);
-	void show_save_notification(float displayTime = 0.5f, float fadeTime = 0.5f);
-	void show_load_notification(float displayTime = 0.5f, float fadeTime = 0.5f);
+	void show_level_notification(int level_number, float display_time = 1.5f, float fade_time = 1.0f);
+	void show_save_notification(float display_time = 0.5f, float fade_time = 0.5f);
+	void show_load_notification(float display_time = 0.5f, float fade_time = 0.5f);
 	
 	// Update the notification state (fade out animation)
-	void update(float deltaTime);
+	void update(float delta_time);
 	
 	// Clear any active notification
 	void clear();
+	
+	// Hide/show notification overlay (for mode switches)
+	void hide_overlay();
+	void show_overlay();
 
 private:
 	NotificationManager();
 	~NotificationManager();
 	
 	void create_overlay();
-	void show_notification(const std::string& text, float displayTime, float fadeTime);
+	void show_notification(const std::string& text, float display_time, float fade_time);
 
 private:
 	Ogre::Overlay* overlay_;

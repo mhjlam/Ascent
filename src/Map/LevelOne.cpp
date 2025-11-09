@@ -20,7 +20,7 @@ LevelOne::LevelOne() : Map() {
     set_ceiling_material("Ascent/SeamlessConcrete2");
     set_wall_material("Ascent/SeamlessConcrete");
     set_cube_brush_thickness(500.0f);
-    build_cube_brush("startArea", -3000.0f, -500.0f, -3000.0f, 6000.0f, 3000.0f, 6000.0f, CUBE_Z_AXIS);
+    build_cube_brush("startArea", -3000.0f, -500.0f, -3000.0f, 6000.0f, 3000.0f, 6000.0f, CubePassThrough::AxisZ);
     
     create_brush("startAreaBackWall", BrushType::Wall);
         set_brush_location(-2500.0f, 0.0f, -3000.0f); // -2500 = -3000 + thickness
@@ -30,7 +30,7 @@ LevelOne::LevelOne() : Map() {
     // create a tunnel
     set_wall_material("Ascent/SeamlessMetal");
     set_cube_brush_thickness(2000.0f);
-    build_cube_brush("tunnel0", -3000.0f, -5000.0f, 3000.0f, 6000.0f, 5000.0f, 6000.0f, CUBE_Y_AXIS);
+    build_cube_brush("tunnel0", -3000.0f, -5000.0f, 3000.0f, 6000.0f, 5000.0f, 6000.0f, CubePassThrough::AxisY);
 
     create_brush("startAreaXtendedCeil", BrushType::Ceiling);
         set_brush_location(-3000.0f, 2000.0f, 3000.0f); 

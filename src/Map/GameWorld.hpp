@@ -49,7 +49,7 @@ private:
     void destroy_scene();
     
 public:
-    void update_overview_visibility(float playerY);
+    void update_overview_visibility(float player_y);
 
 private:
     GameWorld();
@@ -58,18 +58,18 @@ private:
 private:
     bool abort_updates_; // stop the update functions
 
-    std::vector<std::unique_ptr<Map>> maps_;  // All maps owned by GameWorld
-    size_t current_map_index_;                // Index of currently loaded map
+    std::vector<std::unique_ptr<Map>> maps_;            // All maps owned by GameWorld
+    size_t current_map_index_;                          // Index of currently loaded map
     std::list<std::unique_ptr<GameEntity>> entities_;   // entities that require updating
     std::list<std::unique_ptr<GameEntity>> brushes_;    // brushes don't require updating
     
     // Track overview nodes with their Y positions for vertical filtering
     struct OverviewBrush {
         Ogre::SceneNode* node;
-        float minY;
-        float maxY;
-        bool isMarker; // True for Start/Exit areas which should always be visible
-        bool isPillar; // True for pillar/column parts which should all be shown together
+        float min_y;
+        float max_y;
+        bool is_marker; // True for Start/Exit areas which should always be visible
+        bool is_pillar; // True for pillar/column parts which should all be shown together
     };
     std::vector<OverviewBrush> overview_brushes_;
     

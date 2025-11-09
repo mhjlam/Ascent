@@ -16,6 +16,25 @@ TextRenderer::TextRenderer() {
 	
 	overlay_->add2D(panel_);
 	overlay_->show();
+	
+	// Create overview map text element (initially hidden)
+	overview_map_text_ = overlay_manager_->createOverlayElement("TextArea", "OverviewMapText");
+	overview_map_text_->setMetricsMode(Ogre::GMM_PIXELS);
+	overview_map_text_->setParameter("horz_align", "center");  // Center horizontally on screen
+	overview_map_text_->setParameter("vert_align", "top");     // Align from top
+	overview_map_text_->setLeft(0);  // No horizontal offset (centered by horz_align)
+	overview_map_text_->setTop(10);  // 10 pixels from top
+	overview_map_text_->setWidth(800);
+	overview_map_text_->setHeight(100);
+	overview_map_text_->setParameter("font_name", "BlueHighway");
+	overview_map_text_->setParameter("char_height", "32");  // Same size as other notification texts
+	overview_map_text_->setParameter("alignment", "center");  // Center text within the text area
+	overview_map_text_->setParameter("colour_top", "1 1 0");  // Yellow
+	overview_map_text_->setParameter("colour_bottom", "1 1 0");  // Yellow
+	overview_map_text_->setCaption("Overview Map");
+	overview_map_text_->hide();  // Initially hidden
+	
+	panel_->addChild(overview_map_text_);
 }
 
 void TextRenderer::add_crosshair() {
@@ -45,15 +64,15 @@ void TextRenderer::add_textbox(const std::string& id,
 							  Ogre::Real x, Ogre::Real y, 
 							  Ogre::Real width, Ogre::Real height, 
 							  const Ogre::ColourValue& color) {
-	Ogre::OverlayElement* textBox = overlay_manager_->createOverlayElement("TextArea", id);
-    textBox->setMetricsMode(Ogre::GMM_PIXELS);
-    textBox->setPosition(x, y);
-    textBox->setDimensions(width, height);
-    textBox->setParameter("font_name", "BlueHighway");
-    textBox->setParameter("char_height", "32");  // Much larger font
-    textBox->setColour(color);
-    textBox->setCaption(text);
-	panel_->addChild(textBox);
+	Ogre::OverlayElement* text_box = overlay_manager_->createOverlayElement("TextArea", id);
+    text_box->setMetricsMode(Ogre::GMM_PIXELS);
+    text_box->setPosition(x, y);
+    text_box->setDimensions(width, height);
+    text_box->setParameter("font_name", "BlueHighway");
+    text_box->setParameter("char_height", "32");  // Much larger font
+    text_box->setColour(color);
+    text_box->setCaption(text);
+	panel_->addChild(text_box);
 }
 
 void TextRenderer::remove_textbox(const std::string& id) {
@@ -62,12 +81,24 @@ void TextRenderer::remove_textbox(const std::string& id) {
 }
 	
 void TextRenderer::set_text(const std::string& id, const std::string& text, const Ogre::ColourValue& color) {
-	Ogre::OverlayElement* textBox = overlay_manager_->getOverlayElement(id);
-	textBox->setColour(color);
-	textBox->setCaption(text);
+	Ogre::OverlayElement* text_box = overlay_manager_->getOverlayElement(id);
+	text_box->setColour(color);
+	text_box->setCaption(text);
 }
 
 const std::string TextRenderer::get_text(const std::string& id) {
-	Ogre::OverlayElement* textBox = overlay_manager_->getOverlayElement(id);
-	return textBox->getCaption();
+	Ogre::OverlayElement* text_box = overlay_manager_->getOverlayElement(id);
+	return text_box->getCaption();
+}
+
+void TextRenderer::show_overview_map_text() {
+	if (overview_map_text_) {
+		overview_map_text_->show();
+	}
+}
+
+void TextRenderer::hide_overview_map_text() {
+	if (overview_map_text_) {
+		overview_map_text_->hide();
+	}
 }

@@ -1,6 +1,6 @@
 #include "FlyingEnemy.hpp"
 
-#include <ctime>
+#include <random>
 #include <numbers>
 
 #include "Common.hpp"
@@ -9,9 +9,8 @@
 #include "Projectiles/ProjectileFactory.hpp"
 
 
-FlyingEnemy::FlyingEnemy(Ogre::Entity* entity, Ogre::SceneNode* node) : MovingEnemy(entity, node) {
-	srand((unsigned int)time(nullptr));
-
+FlyingEnemy::FlyingEnemy(Ogre::Entity* entity, Ogre::SceneNode* node)
+: MovingEnemy(entity, node) {
 	move_timer_ = 0;
 	speed_ = 1000;
 	health_ = 150;
@@ -27,7 +26,10 @@ void FlyingEnemy::update(const Ogre::Real& elapsed) {
 		Ogre::Vector3 target = get_position();
 		
 		// make a dodging motion in a random direction
-		Ogre::uint num = rand() % 6;
+		static std::random_device rd;
+		static std::mt19937 gen(rd());
+		static std::uniform_int_distribution<> distrib(0, 5);
+		Ogre::uint num = distrib(gen);
 
 		if (num < 1) {
 			target.y += 200;

@@ -19,37 +19,37 @@ void GameState::load() {
 	Common::player->get_node()->setOrientation(player_orientation_);
 }
 
-void GameState::set_current_level(int currentLevel) {
-	current_level_ = currentLevel;
+void GameState::set_current_level(int level) {
+	current_level_ = level;
 }
 
-void GameState::set_player_health(int playerHealth) {
-	player_health_ = playerHealth;
+void GameState::set_player_health(int health) {
+	player_health_ = health;
 }
 
-void GameState::set_player_location(Ogre::Vector3 playerPosition) {
-	player_position_ = playerPosition;
+void GameState::set_player_location(Ogre::Vector3 position) {
+	player_position_ = position;
 }
 
-void GameState::set_player_orientation(Ogre::Quaternion playerOrientation) {
-	player_orientation_ = playerOrientation;
+void GameState::set_player_orientation(Ogre::Quaternion orientation) {
+	player_orientation_ = orientation;
 }
 
-void GameState::set_time_left(float timeLeft) {
-	time_left_ = timeLeft;
+void GameState::set_time_left(float time_left) {
+	time_left_ = time_left;
 }
 
 void GameState::set_score(int score) {
 	score_ = score;
 }
 
-void GameState::add_dead_enemy(std::string deadEnemyEntityName) {
-	dead_enemies_.push_back(deadEnemyEntityName);
+void GameState::add_dead_enemy(std::string enemy_id) {
+	dead_enemies_.push_back(enemy_id);
 }
 
-bool GameState::is_dead(std::string enemyId) {
-	for (auto& dead_enemy_id : dead_enemies_) {
-		if (dead_enemy_id == enemyId) {
+bool GameState::is_dead(std::string target_enemy_id) {
+	for (auto& enemy_id : dead_enemies_) {
+		if (enemy_id == target_enemy_id) {
 			return true;
 		}
 	}

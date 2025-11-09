@@ -5,6 +5,10 @@
 > Maurits Lam  
 > 2025
 
+<p align="center">
+   <img src="media/ascent.gif" alt="Demo Animation" height="400"/>
+</p>
+
 A 3D first-person shooter with six degrees of freedom based on the Descent game series by Parallax Software. Built using the OGRE 3D rendering engine in modern C++.
 
 ## Features
@@ -84,3 +88,10 @@ cmake --build build/release --config Release
 ## License
 
 This software is licensed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.html). See [COPYING](COPYING) for details.
+
+## Original Credits
+
+> Jannes Beurskens  
+> Marco van Laar  
+> Maurits Lam  
+> 2012

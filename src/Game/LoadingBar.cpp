@@ -48,31 +48,26 @@ void LoadingBar::create_overlay() {
     overlay_ = overlay_mgr.create("LoadingOverlay");
     
     // Create main panel (semi-transparent background)
-    panel_ = static_cast<Ogre::OverlayContainer*>(
-        overlay_mgr.createOverlayElement("Panel", "LoadingPanel"));
+    panel_ = static_cast<Ogre::OverlayContainer*>(overlay_mgr.createOverlayElement("Panel", "LoadingPanel"));
     panel_->setMetricsMode(Ogre::GMM_RELATIVE);
     panel_->setPosition(0, 0);
     panel_->setDimensions(1.0, 1.0);
-    // Note: No material needed for transparent background
     
     // Create loading text (will set font later after resources load)
     loading_text_ = overlay_mgr.createOverlayElement("TextArea", "LoadingText");
     loading_text_->setMetricsMode(Ogre::GMM_RELATIVE);
     loading_text_->setPosition(0.35f, 0.45f);
     loading_text_->setDimensions(0.3f, 0.05f);
-    // Note: Font is set after initial resource group loads
     loading_text_->setParameter("char_height", "0.04");
     loading_text_->setParameter("colour_top", "1 1 1");
     loading_text_->setParameter("colour_bottom", "1 1 1");
     loading_text_->setCaption("Loading...");
     
     // Create progress bar container (border/background)
-    progress_bar_container_ = static_cast<Ogre::OverlayContainer*>(
-        overlay_mgr.createOverlayElement("Panel", "ProgressBarContainer"));
+    progress_bar_container_ = static_cast<Ogre::OverlayContainer*>(overlay_mgr.createOverlayElement("Panel", "ProgressBarContainer"));
     progress_bar_container_->setMetricsMode(Ogre::GMM_RELATIVE);
     progress_bar_container_->setPosition(0.25f, 0.55f);
     progress_bar_container_->setDimensions(0.5f, 0.03f);
-    // Set a solid color using colour parameter instead of material
     progress_bar_container_->setParameter("colour", "0.2 0.2 0.2");
     
     // Create progress bar fill
@@ -168,12 +163,14 @@ void LoadingBar::resourceGroupScriptingStarted([[maybe_unused]] const Ogre::Stri
         if (loading_text_) {
             loading_text_->setParameter("font_name", "BlueHighway-12");
         }
-    } catch (...) {
+    }
+    catch (...) {
         // Font not available yet, will remain without font
     }
 }
 
-void LoadingBar::scriptParseStarted([[maybe_unused]] const Ogre::String& scriptName, [[maybe_unused]] bool &skipThisScript) {
+void LoadingBar::scriptParseStarted([[maybe_unused]] const Ogre::String& scriptName, 
+                                    [[maybe_unused]] bool &skipThisScript) {
     // Optional: Update with script name
 }
 

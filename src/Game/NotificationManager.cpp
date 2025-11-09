@@ -72,20 +72,20 @@ void NotificationManager::create_overlay() {
 	overlay_->hide();
 }
 
-void NotificationManager::show_level_notification(int levelNumber, float displayTime, float fadeTime) {
-	std::string text = "Level " + std::to_string(levelNumber);
-	show_notification(text, displayTime, fadeTime);
+void NotificationManager::show_level_notification(int level_number, float display_time, float fade_time) {
+	std::string text = "Level " + std::to_string(level_number);
+	show_notification(text, display_time, fade_time);
 }
 
-void NotificationManager::show_save_notification(float displayTime, float fadeTime) {
-	show_notification("Saved", displayTime, fadeTime);
+void NotificationManager::show_save_notification(float display_time, float fade_time) {
+	show_notification("Saved", display_time, fade_time);
 }
 
-void NotificationManager::show_load_notification(float displayTime, float fadeTime) {
-	show_notification("Loaded", displayTime, fadeTime);
+void NotificationManager::show_load_notification(float display_time, float fade_time) {
+	show_notification("Loaded", display_time, fade_time);
 }
 
-void NotificationManager::show_notification(const std::string& text, float displayTime, float fadeTime) {
+void NotificationManager::show_notification(const std::string& text, float display_time, float fade_time) {
 	// Ensure overlay is created
 	if (!overlay_) {
 		create_overlay();
@@ -97,9 +97,9 @@ void NotificationManager::show_notification(const std::string& text, float displ
 	
 	active_ = true;
 	elapsed_time_ = 0.0f;
-	display_time_ = displayTime;
-	fade_time_ = fadeTime;
-	total_time_ = displayTime + fadeTime;
+	display_time_ = display_time;
+	fade_time_ = fade_time;
+	total_time_ = display_time + fade_time;
 	
 	text_element_->setCaption(text);
 	text_element_->setParameter("colour_top", "1 1 0");  // Reset to bright yellow
@@ -107,25 +107,25 @@ void NotificationManager::show_notification(const std::string& text, float displ
 	overlay_->show();
 }
 
-void NotificationManager::update(float deltaTime) {
+void NotificationManager::update(float delta_time) {
 	if (!active_) {
 		return;
 	}
 	
-	elapsed_time_ += deltaTime;
+	elapsed_time_ += delta_time;
 	
 	if (elapsed_time_ >= total_time_) {
 		// Notification finished
 		clear();
 	} else if (elapsed_time_ >= display_time_) {
 		// In fade-out phase
-		float fadeProgress = (elapsed_time_ - display_time_) / fade_time_;
-		float alpha = 1.0f - fadeProgress;
+		float fade_progress = (elapsed_time_ - display_time_) / fade_time_;
+		float alpha = 1.0f - fade_progress;
 		
 		// Fade to transparent by modifying colour with alpha
-		std::string colorStr = std::to_string(alpha) + " " + std::to_string(alpha) + " 0";
-		text_element_->setParameter("colour_top", colorStr);
-		text_element_->setParameter("colour_bottom", colorStr);
+		std::string color = std::to_string(alpha) + " " + std::to_string(alpha) + " 0";
+		text_element_->setParameter("colour_top", color);
+		text_element_->setParameter("colour_bottom", color);
 	}
 }
 
@@ -137,4 +137,16 @@ void NotificationManager::clear() {
 	active_ = false;
 	elapsed_time_ = 0.0f;
 	overlay_->hide();
+}
+
+void NotificationManager::hide_overlay() {
+	if (overlay_) {
+		overlay_->hide();
+	}
+}
+
+void NotificationManager::show_overlay() {
+	if (overlay_ && active_) {
+		overlay_->show();
+	}
 }

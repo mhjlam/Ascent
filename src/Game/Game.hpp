@@ -19,8 +19,8 @@ public:
     static Game* instance();
 	
 public:
-	void load_map(int mapId);
-	void set_time_left(float timeLeft);
+	void load_map(int map_id);
+	void set_time_left(float time_left);
 	void trigger_map_end();
 	void trigger_map_restart();
     void run();
@@ -38,7 +38,7 @@ private:
 
 	void setup_scene_managers();
     void setup_cameras();
-	bool setup_viewport(Ogre::SceneManager* smgr);
+	bool setup_viewport(Ogre::SceneManager* scene_manager);
 	void setup_resources();
 	void load_resources();
 	void create_overlay();
@@ -48,18 +48,19 @@ private:
     void createRoot() override;
     bool oneTimeConfig() override;
     void setup() override;
-    bool frameRenderingQueued(const Ogre::FrameEvent& evt) override;
+    bool frameRenderingQueued(const Ogre::FrameEvent& event) override;
 	void shutdown() override;
 	
 	// Override to configure window settings
-	OgreBites::NativeWindowPair createWindow(const Ogre::String& name, Ogre::uint32 w, Ogre::uint32 h, Ogre::NameValuePairList miscParams) override;
+	OgreBites::NativeWindowPair createWindow(const Ogre::String& name, 
+		Ogre::uint32 w, Ogre::uint32 h, Ogre::NameValuePairList misc_params) override;
 
 	// Override InputListener methods
-    bool keyPressed(const OgreBites::KeyboardEvent& evt) override;
-    bool keyReleased(const OgreBites::KeyboardEvent& evt) override;
-    bool mouseMoved(const OgreBites::MouseMotionEvent& evt) override;
-    bool mousePressed(const OgreBites::MouseButtonEvent& evt) override;
-    bool mouseReleased(const OgreBites::MouseButtonEvent& evt) override;
+    bool keyPressed(const OgreBites::KeyboardEvent& event) override;
+    bool keyReleased(const OgreBites::KeyboardEvent& event) override;
+    bool mouseMoved(const OgreBites::MouseMotionEvent& event) override;
+    bool mousePressed(const OgreBites::MouseButtonEvent& event) override;
+    bool mouseReleased(const OgreBites::MouseButtonEvent& event) override;
 
 private:
 	// GAME SPECIFIC

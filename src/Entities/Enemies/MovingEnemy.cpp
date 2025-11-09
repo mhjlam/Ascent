@@ -1,6 +1,10 @@
 #include "MovingEnemy.hpp"
 
-MovingEnemy::MovingEnemy(Ogre::Entity* entity, Ogre::SceneNode* node) : Enemy(entity, node) {}
+
+MovingEnemy::MovingEnemy(Ogre::Entity* entity, Ogre::SceneNode* node)
+: Enemy(entity, node) {
+}
+
 
 void MovingEnemy::set_target(Ogre::Vector3 target) {
 	target_position_ = target;

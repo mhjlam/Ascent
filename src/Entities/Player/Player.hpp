@@ -20,7 +20,7 @@ enum class TurretType {
 class Player : public GameEntity {
 public:
     Player() = default;
-	Player(Ogre::SceneNode* const playerNode);
+	Player(Ogre::SceneNode* const player_node);
 
 public: 
 	void update(const Ogre::Real& elapsed);
@@ -28,17 +28,17 @@ public:
     void stop_movement();
 
 	// input
-	void inject_key_down(const OgreBites::KeyboardEvent& evt);
-	void inject_key_up(const OgreBites::KeyboardEvent& evt);
-	void inject_mouse_move(const OgreBites::MouseMotionEvent& evt);
-	void inject_mouse_down(const OgreBites::MouseButtonEvent& evt);
-	void inject_mouse_up(const OgreBites::MouseButtonEvent& evt);
+	void inject_key_down(const OgreBites::KeyboardEvent& event);
+	void inject_key_up(const OgreBites::KeyboardEvent& event);
+	void inject_mouse_move(const OgreBites::MouseMotionEvent& event);
+	void inject_mouse_down(const OgreBites::MouseButtonEvent& event);
+	void inject_mouse_up(const OgreBites::MouseButtonEvent& event);
 
 	// GETTERS/SETTERS
-    const Ogre::uint getHealth() { 
+    const Ogre::uint get_health() { 
 		return health_;
 	}
-	const Ogre::uint getCredits() { 
+	const Ogre::uint get_score() { 
 		return credits_;
 	}
 	
@@ -68,22 +68,26 @@ private: // procedures
 
     friend class boost::serialization::access;
 	template<class Archive>
-    void save(Archive &ar, const unsigned int version) const {
-		ar & boost::serialization::base_object<GameEntity>(*this);
+    void save(Archive& archive, const unsigned int version) const {
+		archive & boost::serialization::base_object<GameEntity>(*this);
     }
 
 	template<class Archive>
-	void load(Archive &ar, const unsigned int version) {
-		ar & boost::serialization::base_object<GameEntity>(*this);
+	void load(Archive& archive, const unsigned int version) {
+		archive & boost::serialization::base_object<GameEntity>(*this);
 		GameWorld::instance().register_entity(this);
 	}
 
 private: 
 	// switches
-	bool move_forward_, move_backward_;
-	bool move_left_, move_right_;
-	bool move_up_, move_down_;
-	bool roll_left_, roll_right_;
+	bool move_forward_;
+	bool move_backward_;
+	bool move_left_;
+	bool move_right_;
+	bool move_up_;
+	bool move_down_;
+	bool roll_left_;
+	bool roll_right_;
 	bool shooting_;
 
 	// math

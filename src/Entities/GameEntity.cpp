@@ -27,8 +27,8 @@ void GameEntity::translate(const Ogre::Vector3& translation) {
     get_node()->translate(translation, Ogre::Node::TS_PARENT);
 }
 
-void GameEntity::move_to(const Ogre::Vector3& newLocation) {
-    set_position(newLocation);
+void GameEntity::move_to(const Ogre::Vector3& position) {
+    set_position(position);
 }
 
 void GameEntity::destroy() {

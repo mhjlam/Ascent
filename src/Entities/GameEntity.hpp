@@ -21,7 +21,7 @@ public:
     virtual void destroy();
 
     void translate(const Ogre::Vector3& translation);
-    void move_to(const Ogre::Vector3& newLocation);
+    void move_to(const Ogre::Vector3& position);
 
 public: // getters
     virtual const Ogre::AxisAlignedBox get_bounding_box() { 
@@ -54,11 +54,11 @@ public: // getters
     }
 
 public: // setters
-    void set_node(Ogre::SceneNode* const newNode) { 
-        main_node_ = newNode;
+    void set_node(Ogre::SceneNode* const new_node) { 
+        main_node_ = new_node;
     }
-    void set_entity(Ogre::Entity* const newEntity) { 
-        entity_ = newEntity;
+    void set_entity(Ogre::Entity* const new_entity) { 
+        entity_ = new_entity;
     }
     void set_start_position(const Ogre::Vector3& position) { 
         start_position_ = position;

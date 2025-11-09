@@ -20,8 +20,6 @@
 #include "Game/NotificationManager.hpp"
 #include "Entities/Player/Player.hpp"
 
-#define CAMERA_NAME "camera"
-
 
 Game* Game::instance_ = nullptr;
 
@@ -31,6 +29,7 @@ Game* Game::instance() {
 	}
 	return instance_;
 }
+
 
 Game::Game()
 : OgreBites::ApplicationContext("Ascent")
@@ -70,38 +69,38 @@ Game::~Game() {
 void Game::createRoot() {
 	// Get the executable directory
 #ifdef _WIN32
-	char exePath[MAX_PATH];
-	GetModuleFileNameA(NULL, exePath, MAX_PATH);
-	std::string exeDir(exePath);
-	size_t pos = exeDir.find_last_of("\\/");
+	char exe_path[MAX_PATH];
+	GetModuleFileNameA(NULL, exe_path, MAX_PATH);
+	std::string exe_dir(exe_path);
+	size_t pos = exe_dir.find_last_of("\\/");
 	if (pos != std::string::npos) {
-		exeDir = exeDir.substr(0, pos);
+		exe_dir = exe_dir.substr(0, pos);
 	}
 #else
-	std::string exeDir = ".";
+	std::string exe_dir = ".";
 #endif
 
 	// Build path to ogre.cfg in executable directory
-	std::string configPath = exeDir + "/ogre.cfg";
+	std::string config_path = exe_dir + "/ogre.cfg";
 	
 	// Call base class to create Root
 	OgreBites::ApplicationContext::createRoot();
 	
 	// Manually load and apply the config from the executable directory  
-	if (std::ifstream(configPath).good()) {
+	if (std::ifstream(config_path).good()) {
 		Ogre::ConfigFile cfg;
-		cfg.load(configPath, "\t:=", false);
+		cfg.load(config_path, "\t:=", false);
 		
 		// Get render system name
-		Ogre::String renderSystemName = cfg.getSetting("Render System");
-		Ogre::RenderSystem* rs = getRoot()->getRenderSystemByName(renderSystemName);
+		Ogre::String render_system_name = cfg.getSetting("Render System");
+		Ogre::RenderSystem* render_system = getRoot()->getRenderSystemByName(render_system_name);
 		
-		if (rs) {
+		if (render_system) {
 			// Apply all config options for this render system
-			const auto& settings = cfg.getSettings(renderSystemName);
+			const auto& settings = cfg.getSettings(render_system_name);
 			for (const auto& setting : settings) {
 				try {
-					rs->setConfigOption(setting.first, setting.second);
+					render_system->setConfigOption(setting.first, setting.second);
 				}
 				catch (...) {
 					std::cerr << "Failed to set option: " << setting.first << " = " << setting.second << std::endl;
@@ -109,11 +108,11 @@ void Game::createRoot() {
 			}
 			
 			// Set this as the active render system
-			getRoot()->setRenderSystem(rs);
+			getRoot()->setRenderSystem(render_system);
 		}
 	}
 	else {
-		std::cerr << "Config file not found at: " << configPath << std::endl;
+		std::cerr << "Config file not found at: " << config_path << std::endl;
 	}
 }
 
@@ -127,10 +126,13 @@ bool Game::oneTimeConfig() {
 	return OgreBites::ApplicationContext::oneTimeConfig();
 }
 
-OgreBites::NativeWindowPair Game::createWindow(const Ogre::String& name, [[maybe_unused]] Ogre::uint32 w, [[maybe_unused]] Ogre::uint32 h, Ogre::NameValuePairList miscParams) {
+OgreBites::NativeWindowPair Game::createWindow(const Ogre::String& name, 
+											   [[maybe_unused]] Ogre::uint32 w, 
+											   [[maybe_unused]] Ogre::uint32 h, 
+											   Ogre::NameValuePairList misc_params) {
 	// Call the ApplicationContext method which delegates to the platform-specific implementation (SDL2)
 	// Don't call ApplicationContextBase - it won't set up SDL2 properly
-	return OgreBites::ApplicationContext::createWindow(name, w, h, miscParams);
+	return OgreBites::ApplicationContext::createWindow(name, w, h, misc_params);
 }
 
 void Game::setup() {
@@ -146,11 +148,11 @@ void Game::setup() {
 		if (Ogre::RTShader::ShaderGenerator::initialize()) {
 			
 			// Get shader generator instance
-			Ogre::RTShader::ShaderGenerator* shadergen = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
+			Ogre::RTShader::ShaderGenerator* shader_generator = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
 			
 			// Configure for OpenGL (no cache needed)
-			shadergen->setTargetLanguage("glsl");
-			shadergen->setShaderCachePath("");
+			shader_generator->setTargetLanguage("glsl");
+			shader_generator->setShaderCachePath("");
 		}
 		else {
 			std::cerr << "RTSS: Failed to initialize" << std::endl;
@@ -199,11 +201,11 @@ void Game::setup_scene_managers() {
 	Common::overview_scene_manager = Common::root->createSceneManager();
 	
 	// Set up RTSS for per-pixel lighting now that resource paths are fixed
-	Ogre::RTShader::ShaderGenerator* shadergen = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
-	if (shadergen) {
+	Ogre::RTShader::ShaderGenerator* shader_generator = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
+	if (shader_generator) {
 		// Register scene managers to enable shader generation
-		shadergen->addSceneManager(Common::scene_manager);
-		shadergen->addSceneManager(Common::overview_scene_manager);
+		shader_generator->addSceneManager(Common::scene_manager);
+		shader_generator->addSceneManager(Common::overview_scene_manager);
 	} else {
 		std::cerr << "RTSS: ShaderGenerator not available - using fixed function" << std::endl;
 	}
@@ -223,7 +225,7 @@ void Game::setup_cameras() {
     Common::camera = Common::scene_manager->createCamera("MainCamera");
 	Common::camera->setNearClipDistance(5);
 
-    // setup overview cam - give it a different name to avoid conflicts
+    // setup overview camera - give it a different name to avoid conflicts
 	Common::overview_camera = Common::overview_scene_manager->createCamera("OverviewCamera");
 	Common::overview_camera->setNearClipDistance(100.0f);
 	Common::overview_camera->setFarClipDistance(50000.0f); // Must be large enough to see the map from 10000 units up
@@ -237,27 +239,27 @@ void Game::setup_cameras() {
 	Common::overview_scene_manager->setFog(Ogre::FOG_NONE); // Disable any fog
 	
     // Attach camera to scene node and orient it to look straight down
-    auto* camNode = Common::overview_scene_manager->getRootSceneNode()->createChildSceneNode("OverviewCameraNode");
-    camNode->attachObject(Common::overview_camera);
+    auto* camera_node = Common::overview_scene_manager->getRootSceneNode()->createChildSceneNode("OverviewCameraNode");
+    camera_node->attachObject(Common::overview_camera);
     
 	// Look straight down (negative Y axis)
-    camNode->setOrientation(Ogre::Quaternion(Ogre::Degree(-90), Ogre::Vector3::UNIT_X));
+    camera_node->setOrientation(Ogre::Quaternion(Ogre::Degree(-90), Ogre::Vector3::UNIT_X));
 
     // Position at origin initially - will be moved when TAB is pressed
-    camNode->setPosition(0, 10000, 0);
+    camera_node->setPosition(0, 10000, 0);
 }
 
 // setup a viewport for the specified scene manager
-bool Game::setup_viewport(Ogre::SceneManager* smgr) {
-	if (!smgr) {
+bool Game::setup_viewport(Ogre::SceneManager* scene_manager) {
+	if (!scene_manager) {
 		return false;
 	}
 
 	Common::render_window->removeAllViewports();
 
 	// Use MainCamera for the initial viewport
-	Ogre::Camera* cam = Common::camera; // Use the actual camera pointer instead of looking up by name
-	Ogre::Viewport* viewport = Common::render_window->addViewport(cam);
+	Ogre::Camera* camera = Common::camera; // Use the actual camera pointer instead of looking up by name
+	Ogre::Viewport* viewport = Common::render_window->addViewport(camera);
     viewport->setBackgroundColour(Ogre::ColourValue::Black);
     
     // Enable RTSS material scheme for per-pixel lighting
@@ -267,30 +269,81 @@ bool Game::setup_viewport(Ogre::SceneManager* smgr) {
     viewport->setOverlaysEnabled(true);
 
 	// set aspect ration to match viewport
-	cam->setAspectRatio(Ogre::Real(viewport->getActualWidth()) / Ogre::Real(viewport->getActualHeight()));
+	camera->setAspectRatio(Ogre::Real(viewport->getActualWidth()) / Ogre::Real(viewport->getActualHeight()));
 
 	return true;
 }
 
 // setup all the resources referenced to in the resources file so they can be used
 void Game::setup_resources() {
+	// Get the executable directory to locate the config file
+#ifdef _WIN32
+	char exe_path[MAX_PATH];
+	GetModuleFileNameA(NULL, exe_path, MAX_PATH);
+	std::string exe_dir(exe_path);
+	size_t pos = exe_dir.find_last_of("\\/");
+	if (pos != std::string::npos) {
+		exe_dir = exe_dir.substr(0, pos);
+	}
+#else
+	std::string exe_dir = ".";
+#endif
+
+	// Build full path to resource config file in executable directory
+	std::string resource_config_path = exe_dir + "/" + resource_config_;
+	
 	// Load resource paths from config file
-    Ogre::ConfigFile cf;
-    cf.load(resource_config_);
+    Ogre::ConfigFile config_file;
+    config_file.load(resource_config_path);
+
+	// Helper lambda to expand environment variables in paths
+	auto expand_env_vars = [](const std::string& path) -> std::string {
+		std::string result = path;
+		size_t start = 0;
+		while ((start = result.find("$(", start)) != std::string::npos) {
+			size_t end = result.find(")", start);
+			if (end != std::string::npos) {
+				std::string var_name = result.substr(start + 2, end - start - 2);
+#ifdef _WIN32
+				char* env_value = nullptr;
+				size_t len = 0;
+				if (_dupenv_s(&env_value, &len, var_name.c_str()) == 0 && env_value != nullptr) {
+					result.replace(start, end - start + 1, env_value);
+					free(env_value);
+				}
+				else {
+					start = end + 1; // Skip this variable if not found
+				}
+#else
+				const char* env_value = std::getenv(var_name.c_str());
+				if (env_value) {
+					result.replace(start, end - start + 1, env_value);
+				}
+				else {
+					start = end + 1; // Skip this variable if not found
+				}
+#endif
+			}
+			else {
+				break;
+			}
+		}
+		return result;
+	};
 
     // Go through all sections & settings in the file
-    Ogre::ConfigFile::SectionIterator sit = cf.getSectionIterator();
+    Ogre::ConfigFile::SectionIterator sit = config_file.getSectionIterator();
 
-    Ogre::String secName, typeName, archName;
+    Ogre::String section_name, type_name, arch_name;
     while (sit.hasMoreElements()) {
-        secName = sit.peekNextKey();
-        Ogre::ConfigFile::SettingsMultiMap *settings = sit.getNext();
+        section_name = sit.peekNextKey();
+        Ogre::ConfigFile::SettingsMultiMap* settings = sit.getNext();
         Ogre::ConfigFile::SettingsMultiMap::iterator it;
         
 		for (it = settings->begin(); it != settings->end(); ++it) {
-            typeName = it->first;
-            archName = it->second;
-            Ogre::ResourceGroupManager::getSingleton().addResourceLocation(archName, typeName, secName);
+            type_name = it->first;
+            arch_name = expand_env_vars(it->second); // Expand environment variables
+            Ogre::ResourceGroupManager::getSingleton().addResourceLocation(arch_name, type_name, section_name);
         }
     }
 }
@@ -308,24 +361,29 @@ void Game::load_resources() {
 
 void Game::create_overlay() {
 	// Create a TEST overlay with a bright colored panel to see if overlays work at all
-	Ogre::OverlayManager& overlayMgr = Ogre::OverlayManager::getSingleton();
-	Ogre::Overlay* testOverlay = overlayMgr.create("TestOverlay");
-	Ogre::OverlayContainer* testPanel = static_cast<Ogre::OverlayContainer*>(
-		overlayMgr.createOverlayElement("Panel", "TestPanel"));
-	testPanel->setMetricsMode(Ogre::GMM_PIXELS);
-	testPanel->setPosition(100, 100);
-	testPanel->setDimensions(200, 200);
-	testPanel->setParameter("colour", "1 0 0");  // Bright red
-	testOverlay->add2D(testPanel);
-	testOverlay->setZOrder(500);
-	testOverlay->show();
+	Ogre::OverlayManager& overlay_manager = Ogre::OverlayManager::getSingleton();
+	Ogre::Overlay* test_overlay = overlay_manager.create("TestOverlay");
+	Ogre::OverlayContainer* test_panels = static_cast<Ogre::OverlayContainer*>(
+		overlay_manager.createOverlayElement("Panel", "TestPanel"));
+	test_panels->setMetricsMode(Ogre::GMM_PIXELS);
+	test_panels->setPosition(100, 100);
+	test_panels->setDimensions(200, 200);
+	test_panels->setParameter("colour", "1 0 0");  // Bright red
+	test_overlay->add2D(test_panels);
+	test_overlay->setZOrder(500);
+	test_overlay->show();
 	
 	TextRenderer::instance().add_crosshair();
 	
-	// Use much more visible positions and sizes
-	TextRenderer::instance().add_textbox("hud_health", "HEALTH: 100", 10, 10, 400, 50, Ogre::ColourValue::White);
-	TextRenderer::instance().add_textbox("hud_timer",  "TIME: 180",   10, 50, 400, 50, Ogre::ColourValue::White);
-	TextRenderer::instance().add_textbox("hud_score",  "SCORE: 0",    10, 90, 400, 50, Ogre::ColourValue::White);
+	// Create separate labels and values for proper alignment
+	TextRenderer::instance().add_textbox("hud_health_label", "HEALTH:", 10, 10, 200, 50, Ogre::ColourValue::White);
+	TextRenderer::instance().add_textbox("hud_health", "100", 110, 10, 200, 50, Ogre::ColourValue::White);
+
+	TextRenderer::instance().add_textbox("hud_timer_label", "TIMER:",  10, 50, 200, 50, Ogre::ColourValue::White);
+	TextRenderer::instance().add_textbox("hud_timer", "3:00", 110, 50, 200, 50, Ogre::ColourValue::White);
+	
+	TextRenderer::instance().add_textbox("hud_score_label", "SCORE:",  10, 90, 200, 50, Ogre::ColourValue::White);
+	TextRenderer::instance().add_textbox("hud_score", "0", 110, 90, 200, 50, Ogre::ColourValue::White);
 }
 
 // initialize maps
@@ -364,8 +422,8 @@ void Game::trigger_map_restart() {
     }
     
     // Show level notification
-    int currentLevel = static_cast<int>(GameWorld::instance().get_current_map_index()) + 1;
-    NotificationManager::instance().show_level_notification(currentLevel);
+    int current_level = static_cast<int>(GameWorld::instance().get_current_map_index()) + 1;
+    NotificationManager::instance().show_level_notification(current_level);
 }
 
 // end the current map
@@ -392,19 +450,19 @@ void Game::trigger_map_end() {
         }
         
         // Show level notification
-        int currentLevel = static_cast<int>(GameWorld::instance().get_current_map_index()) + 1;
-        NotificationManager::instance().show_level_notification(currentLevel);
+        int current_level = static_cast<int>(GameWorld::instance().get_current_map_index()) + 1;
+        NotificationManager::instance().show_level_notification(current_level);
     }
 	else {
         // Game completed - show victory screen
         game_over_ = true;
-        int finalScore = Common::player ? Common::player->getCredits() : 0;
-        GameOverScreen::instance().show_victory_screen(finalScore, has_save_file_);
+        int final_score = Common::player ? Common::player->get_score() : 0;
+        GameOverScreen::instance().show_victory_screen(final_score, has_save_file_);
     }
 }
 
 // updated per frame
-bool Game::frameRenderingQueued(const Ogre::FrameEvent& evt) {
+bool Game::frameRenderingQueued(const Ogre::FrameEvent& event) {
     if (Common::render_window && Common::render_window->isClosed()) {
 		return false;
 	}
@@ -414,50 +472,50 @@ bool Game::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 	}
 
 	// Update notification manager
-	NotificationManager::instance().update(evt.timeSinceLastFrame);
+	NotificationManager::instance().update(event.timeSinceLastFrame);
 
 	// end-game conditions
 	if (time_left_ < -2.0f && !game_over_) {
 		game_over_ = true;
-		int finalScore = Common::player ? Common::player->getCredits() : 0;
-		GameOverScreen::instance().show_death_screen(finalScore, has_save_file_);
+		int final_score = Common::player ? Common::player->get_score() : 0;
+		GameOverScreen::instance().show_death_screen(final_score, has_save_file_);
 	}
 	
 	// Check for player death
-    if (Common::player && Common::player->getHealth() <= 0 && !player_died_ && !game_over_) {
+    if (Common::player && Common::player->get_health() <= 0 && !player_died_ && !game_over_) {
 		player_died_ = true;
 		game_over_ = true;
-		int finalScore = Common::player->getCredits();
-		GameOverScreen::instance().show_death_screen(finalScore, has_save_file_);
+		int final_score = Common::player->get_score();
+		GameOverScreen::instance().show_death_screen(final_score, has_save_file_);
 		// Don't auto-restart, wait for player input
 		return true;
 	}
 
     // update game world and timer (only when not in mapmode and not game over)
     if (!map_mode_ && !game_over_) {
-        GameWorld::instance().update(evt.timeSinceLastFrame);
-        time_left_ -= evt.timeSinceLastFrame;
+        GameWorld::instance().update(event.timeSinceLastFrame);
+        time_left_ -= event.timeSinceLastFrame;
     }
     
     // Update player indicator position and orientation in overview scene
     if (Common::player && Common::overview_scene_manager->hasSceneNode("PlayerOverviewNode")) {
-        Ogre::SceneNode* playerOverviewNode = Common::overview_scene_manager->getSceneNode("PlayerOverviewNode");
-        playerOverviewNode->setPosition(Common::player->get_position());
+        Ogre::SceneNode* player_overview_node = Common::overview_scene_manager->getSceneNode("PlayerOverviewNode");
+        player_overview_node->setPosition(Common::player->get_position());
         
         // Rotate arrow to point in player's facing direction
         // Get player's yaw (rotation around Y axis)
-        Ogre::Quaternion playerOrientation = Common::player->get_node()->getOrientation();
-        playerOverviewNode->setOrientation(playerOrientation);
+        Ogre::Quaternion player_orientation = Common::player->get_node()->getOrientation();
+        player_overview_node->setOrientation(player_orientation);
     }
     
     // Update overview camera position to follow player (if in map mode)
     // Camera orientation stays fixed looking straight down
     if (map_mode_ && Common::player && Common::overview_scene_manager->hasSceneNode("OverviewCameraNode")) {
-        auto* camNode = Common::overview_scene_manager->getSceneNode("OverviewCameraNode");
-        if (camNode) {
+        auto* camera_node = Common::overview_scene_manager->getSceneNode("OverviewCameraNode");
+        if (camera_node) {
             Ogre::Vector3 playerPos = Common::player->get_position();
             // Apply 180-degree Y rotation transform: (x,y,z) -> (-x,y,-z)
-            camNode->setPosition(-playerPos.x, 15000.0f, -playerPos.z);
+            camera_node->setPosition(-playerPos.x, 15000.0f, -playerPos.z);
             
             // Update overview visibility based on player's vertical position
             GameWorld::instance().update_overview_visibility(playerPos.y);
@@ -472,109 +530,125 @@ bool Game::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 void Game::swap_view() {
 	if (map_mode_) {
 		// Switching to overview/map mode
-		Ogre::Viewport* vp = Common::render_window->getViewport(0);
+		Ogre::Viewport* viewport = Common::render_window->getViewport(0);
 		
-		vp->setCamera(Common::overview_camera);
-		vp->setBackgroundColour(Ogre::ColourValue(0.2f, 0.2f, 0.3f)); // Dark blue background for contrast
+		viewport->setCamera(Common::overview_camera);
+		viewport->setBackgroundColour(Ogre::ColourValue(0.2f, 0.2f, 0.3f)); // Dark blue background for contrast
 		
 		// Use default material scheme for overview (no RTSS shaders needed for simple unlit materials)
-		vp->setMaterialScheme("");  // Empty string = default scheme
+		viewport->setMaterialScheme("");  // Empty string = default scheme
 		
 		// Set orthographic window size based on viewport aspect ratio
-		Ogre::Real aspectRatio = Ogre::Real(vp->getActualWidth()) / Ogre::Real(vp->getActualHeight());
-		Ogre::Real viewHeight = 10000.0f; // Large window to see big area around player (geometry is 0.01x scale)
-		Ogre::Real viewWidth = viewHeight * aspectRatio;
-		Common::overview_camera->setOrthoWindow(viewWidth, viewHeight);
+		Ogre::Real aspect_ratio = Ogre::Real(viewport->getActualWidth()) / Ogre::Real(viewport->getActualHeight());
+		Ogre::Real view_height = 10000.0f; // Large window to see big area around player (geometry is 0.01x scale)
+		Ogre::Real view_width = view_height * aspect_ratio;
+		Common::overview_camera->setOrthoWindow(view_width, view_height);
 		
 		// Debug: Check scene manager contents
 		Ogre::SceneManager::MovableObjectIterator it = Common::overview_scene_manager->getMovableObjectIterator("Entity");
-		int entityCount = 0;
+		int entity_count = 0;
 		while (it.hasMoreElements()) {
 			it.getNext();
-			entityCount++;
+			entity_count++;
 		}
 		
-		Common::overview_camera->setAspectRatio(aspectRatio);
+		Common::overview_camera->setAspectRatio(aspect_ratio);
 		TextRenderer::instance().hide_crosshair();
+		TextRenderer::instance().show_overview_map_text();
+		NotificationManager::instance().hide_overlay();
 	}
     else {
 		// Switching back to normal game view
-		Ogre::Viewport* vp = Common::render_window->getViewport(0);
-	    vp->setCamera(Common::camera);
-		vp->setBackgroundColour(Ogre::ColourValue(0.0f, 0.0f, 0.0f)); // Black background for normal view
+		Ogre::Viewport* viewport = Common::render_window->getViewport(0);
+	    viewport->setCamera(Common::camera);
+		viewport->setBackgroundColour(Ogre::ColourValue(0.0f, 0.0f, 0.0f)); // Black background for normal view
 		
 		// Restore RTSS material scheme for per-pixel lighting in gameplay
-		vp->setMaterialScheme(Ogre::MSN_SHADERGEN);
+		viewport->setMaterialScheme(Ogre::MSN_SHADERGEN);
 		
 		TextRenderer::instance().show_crosshair();
+		TextRenderer::instance().hide_overview_map_text();
+		NotificationManager::instance().show_overlay();
 	}
 }
 
 // update overlay
 void Game::update_overlay() {
 	std::stringstream health;
-	std::stringstream timeleft;
-	std::stringstream credits;
+	std::stringstream time;
+	std::stringstream score;
 
-	timeleft.precision(3);
-	health   << "HEALTH:  " << (Common::player ? Common::player->getHealth() : '\0');
-	timeleft << "TIME:    " << time_left_;
-    credits  << "SCORE:   " << (Common::player ? Common::player->getCredits() : '\0');
+	health << (Common::player ? Common::player->get_health() : 0);
+	score  << (Common::player ? Common::player->get_score() : 0);
+	
+	// Format time as minutes:seconds
+	int total_seconds = static_cast<int>(time_left_);
+	int minutes = total_seconds / 60;
+	int seconds = total_seconds % 60;
+	time << minutes << ":" << (seconds < 10 ? "0" : "") << seconds;
 
 	TextRenderer::instance().set_text("hud_health", health.str());
-	TextRenderer::instance().set_text("hud_timer", timeleft.str());
-	TextRenderer::instance().set_text("hud_score", credits.str());
+	TextRenderer::instance().set_text("hud_timer", time.str());
+	TextRenderer::instance().set_text("hud_score", score.str());
 
-	if (time_left_ <= 0.0f) {
-		TextRenderer::instance().set_text("hud_timer",  "TIME:    0", Ogre::ColourValue(1.0f, 0.0f, 0.0f)); // set color to red
+	if (time_left_ < 0.0f) {
+		TextRenderer::instance().set_text("hud_timer", "0:00", Ogre::ColourValue(1.0f, 0.0f, 0.0f)); // set color to red
+	}
+	else if (time_left_ <= 30.0f) {
+		TextRenderer::instance().set_text("hud_timer", time.str(), Ogre::ColourValue(1.0f, 0.0f, 0.0f)); // set color to red
+	}
+	else if (time_left_ <= 60.0f) {
+		TextRenderer::instance().set_text("hud_timer", time.str(), Ogre::ColourValue(1.0f, 1.0f, 0.0f)); // set color to yellow
+	}
+	else {
+		TextRenderer::instance().set_text("hud_timer", time.str(), Ogre::ColourValue(1.0f, 1.0f, 1.0f)); // set color to white
 	}
 
     if (Common::player) {
-		Ogre::uint playerHealth = Common::player->getHealth();
-		Ogre::ColourValue indicatorColor = Ogre::ColourValue(1.0f, 1.0f, 1.0f);
+		Ogre::uint player_health = Common::player->get_health();
+		Ogre::ColourValue indicator_color = Ogre::ColourValue(1.0f, 1.0f, 1.0f);
 
 		std::stringstream lifebar;
-		lifebar << "HEALTH:  " << playerHealth;
+		lifebar << player_health;
 
-		if (playerHealth <= 30) { // critical
-			indicatorColor = Ogre::ColourValue(1.0f, 0.0f, 0.0f);
+		if (player_health <= 30) { // critical
+			indicator_color = Ogre::ColourValue(1.0f, 0.0f, 0.0f);
 		}
-		else if (playerHealth <= 60) { // damaged
-			indicatorColor = Ogre::ColourValue(1.0f, 1.0f, 0.0f);
+		else if (player_health <= 60) { // damaged
+			indicator_color = Ogre::ColourValue(1.0f, 1.0f, 0.0f);
 		}
 		else { // healthy
-			indicatorColor = Ogre::ColourValue(0.1f, 1.0f, 0.1f);
+			indicator_color = Ogre::ColourValue(0.1f, 1.0f, 0.1f);
 		}
 
-		TextRenderer::instance().set_text("hud_health", lifebar.str(), indicatorColor);
+		TextRenderer::instance().set_text("hud_health", lifebar.str(), indicator_color);
 	}
 }
 
-void Game::load_map(int mapId) {
+void Game::load_map(int map_id) {
     // Load a specific map by ID (used during save game restoration)
-    // mapId is 1-based, but GameWorld uses 0-based indexing
-    if (mapId > 0) {
-        size_t index = static_cast<size_t>(mapId - 1);
+    // map_id is 1-based, but GameWorld uses 0-based indexing
+    if (map_id > 0) {
+        size_t index = static_cast<size_t>(map_id - 1);
         GameWorld::instance().load_map_by_index(index);
     }
 }
 
-void Game::set_time_left(float timeLeft) {
-	time_left_ = timeLeft;
+void Game::set_time_left(float time_left) {
+	time_left_ = time_left;
 }
 
 void Game::save() {
 	std::ofstream ofs("save");
-	
 	boost::archive::text_oarchive archive(ofs);
 	
 	// current_map_index_ is 0-based, but GameState uses 1-based indexing
-	int currentLevel = static_cast<int>(GameWorld::instance().get_current_map_index()) + 1;
-	Common::game_state.set_current_level(currentLevel);
-	Common::game_state.set_player_health(Common::player->getHealth());
+	int current_level = static_cast<int>(GameWorld::instance().get_current_map_index()) + 1;
+	Common::game_state.set_current_level(current_level);
+	Common::game_state.set_player_health(Common::player->get_health());
 	Common::game_state.set_player_location(Common::player->get_position());
 	Common::game_state.set_time_left(time_left_);
-	Common::game_state.set_score(Common::player->getCredits());
+	Common::game_state.set_score(Common::player->get_score());
 	Common::game_state.set_player_orientation(Common::player->get_node()->getOrientation());
 
 	archive << Common::game_state;
@@ -617,8 +691,8 @@ void Game::load() {
 		
 		// Show load notification
 		NotificationManager::instance().show_load_notification();
-		
-	} catch (const std::exception& e) {
+	}
+	catch (const std::exception& e) {
 		std::cerr << "Error loading save file: " << e.what() << std::endl;
 		if (loading_bar_) {
 			loading_bar_->hide_level_loading();
@@ -626,8 +700,8 @@ void Game::load() {
 	}
 }
 
-bool Game::keyPressed(const OgreBites::KeyboardEvent& evt) {
-	if (evt.keysym.sym == OgreBites::SDLK_ESCAPE) {
+bool Game::keyPressed(const OgreBites::KeyboardEvent& event) {
+	if (event.keysym.sym == OgreBites::SDLK_ESCAPE) {
 		shutdown_requested_ = true;
 		getRoot()->queueEndRendering();
 		return true;
@@ -635,7 +709,7 @@ bool Game::keyPressed(const OgreBites::KeyboardEvent& evt) {
 	
 	// Handle game over screen input
 	if (game_over_) {
-		if (evt.keysym.sym == OgreBites::SDLK_RETURN || evt.keysym.sym == OgreBites::SDLK_KP_ENTER) {
+		if (event.keysym.sym == OgreBites::SDLK_RETURN || event.keysym.sym == OgreBites::SDLK_KP_ENTER) {
 			// Restart game from level 1
 			game_over_ = false;
 			player_died_ = false;
@@ -649,7 +723,7 @@ bool Game::keyPressed(const OgreBites::KeyboardEvent& evt) {
 			NotificationManager::instance().show_level_notification(1);
 			return true;
 		}
-		else if (evt.keysym.sym == OgreBites::SDLK_F8) {
+		else if (event.keysym.sym == OgreBites::SDLK_F8) {
 			// Try to load saved game
 			load();
 			return true;
@@ -658,11 +732,11 @@ bool Game::keyPressed(const OgreBites::KeyboardEvent& evt) {
 		return true;
 	}
 	
-	if (evt.keysym.sym == OgreBites::SDLK_F11) {
+	if (event.keysym.sym == OgreBites::SDLK_F11) {
 		// Toggle fullscreen with F11
 		// First try Ogre's setFullscreen() - may not work on all RenderSystems
-		bool isCurrentlyFullscreen = Common::render_window->isFullScreen();
-		Common::render_window->setFullscreen(!isCurrentlyFullscreen, 
+		bool is_currently_fullscreen = Common::render_window->isFullScreen();
+		Common::render_window->setFullscreen(!is_currently_fullscreen, 
 			Common::render_window->getWidth(), 
 			Common::render_window->getHeight());
 		
@@ -670,31 +744,30 @@ bool Game::keyPressed(const OgreBites::KeyboardEvent& evt) {
 		// and we'll need to accept that fullscreen toggle isn't supported
 		return true;
 	}
-	else if (evt.keysym.sym == OgreBites::SDLK_RETURN 
-		&& (evt.keysym.mod & OgreBites::KMOD_ALT)) {
+	else if (event.keysym.sym == OgreBites::SDLK_RETURN 
+		&& (event.keysym.mod & OgreBites::KMOD_ALT)) {
 		// Toggle fullscreen with Alt+Enter
-		bool isCurrentlyFullscreen = Common::render_window->isFullScreen();
-		Common::render_window->setFullscreen(!isCurrentlyFullscreen, 
+		bool is_currently_fullscreen = Common::render_window->isFullScreen();
+		Common::render_window->setFullscreen(!is_currently_fullscreen, 
 			Common::render_window->getWidth(), 
 			Common::render_window->getHeight());
 		
 		return true;
 	}
-	else if (evt.keysym.sym == OgreBites::SDLK_F5) {
+	else if (event.keysym.sym == OgreBites::SDLK_F5) {
 		if (!game_over_) {
 			save();
 		}
 	}
-	else if (evt.keysym.sym == OgreBites::SDLK_F8) {
+	else if (event.keysym.sym == OgreBites::SDLK_F8) {
 		load();
 	}
-	else if (evt.keysym.sym == '\t') {  // TAB key
+	else if (event.keysym.sym == '\t') {  // TAB key
 		if (game_over_) {
 			return true;  // Ignore TAB when game is over
 		}
 		
 		map_mode_ = !map_mode_;
-
         if (Common::player) {
 			Common::player->stop_movement();
 		}
@@ -708,53 +781,53 @@ bool Game::keyPressed(const OgreBites::KeyboardEvent& evt) {
         
         // Position camera directly above player at fixed height
 		if (Common::overview_scene_manager->hasSceneNode("OverviewCameraNode")) {
-			auto* camNode = Common::overview_scene_manager->getSceneNode("OverviewCameraNode");
-			if (camNode && Common::player) {
+			auto* camera_node = Common::overview_scene_manager->getSceneNode("OverviewCameraNode");
+			if (camera_node && Common::player) {
 				Ogre::Vector3 playerPos = Common::player->get_position();
 				// Camera at moderate height to see scaled-down overview (geometry is 0.01x scale)
 				// Apply 180-degree Y rotation transform: (x,y,z) -> (-x,y,-z)
-				camNode->setPosition(-playerPos.x, 200.0f, -playerPos.z);
+				camera_node->setPosition(-playerPos.x, 200.0f, -playerPos.z);
 			}
 		}
 
 		swap_view();
     }
-	else if (evt.keysym.sym == OgreBites::SDLK_DELETE || evt.keysym.sym == '\b') {  // DELETE or BACKSPACE
+	else if (event.keysym.sym == OgreBites::SDLK_DELETE || event.keysym.sym == '\b') {  // DELETE or BACKSPACE
 		trigger_map_restart();
 		return true;
 	}
 
 	if (!map_mode_ && !game_over_ && Common::player) {
-		Common::player->inject_key_down(evt);
+		Common::player->inject_key_down(event);
 	}
 
 	return true;
 }
 
-bool Game::keyReleased(const OgreBites::KeyboardEvent& evt) {
+bool Game::keyReleased(const OgreBites::KeyboardEvent& event) {
 	if (!map_mode_ && !game_over_ && Common::player) {
-		Common::player->inject_key_up(evt);
+		Common::player->inject_key_up(event);
 	}
     return true;
 }
 
-bool Game::mouseMoved(const OgreBites::MouseMotionEvent& evt) {
+bool Game::mouseMoved(const OgreBites::MouseMotionEvent& event) {
 	if (!map_mode_ && !game_over_ && Common::player) {
-		Common::player->inject_mouse_move(evt);
+		Common::player->inject_mouse_move(event);
 	}
     return true;
 }
 
-bool Game::mousePressed(const OgreBites::MouseButtonEvent& evt) {
+bool Game::mousePressed(const OgreBites::MouseButtonEvent& event) {
 	if (!map_mode_ && !game_over_ && Common::player) {
-		Common::player->inject_mouse_down(evt);
+		Common::player->inject_mouse_down(event);
 	}
     return true;
 }
 
-bool Game::mouseReleased(const OgreBites::MouseButtonEvent& evt) {
+bool Game::mouseReleased(const OgreBites::MouseButtonEvent& event) {
 	if (!map_mode_ && !game_over_ && Common::player) {
-		Common::player->inject_mouse_up(evt);
+		Common::player->inject_mouse_up(event);
 	}
     return true;
 }

@@ -1,6 +1,6 @@
 overlay HUD/CrossHair
 {
-    zorder 200
+    zorder 650
 
     element Panel(UIelements/CrossHairPanel)
     {

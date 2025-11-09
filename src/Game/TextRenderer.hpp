@@ -1,11 +1,12 @@
 #pragma once
 
+#include <string>
+
 #include <Ogre.h>
 #include <OgreOverlay.h>
 #include <OgreOverlayManager.h>
 #include <OgreOverlayContainer.h>
 #include <OgreOverlayElement.h>
-#include <string>
 
 class TextRenderer {
 public:
@@ -21,6 +22,9 @@ public:
 	void add_crosshair();
 	void hide_crosshair();
 	void show_crosshair();
+
+	void show_overview_map_text();
+	void hide_overview_map_text();
 
 	void add_textbox(const std::string& id, 
 					 const std::string& text, 
@@ -43,4 +47,5 @@ private:
 	Ogre::Overlay* crosshair_;
 	Ogre::OverlayContainer*	panel_;
 	Ogre::OverlayManager* overlay_manager_;
+	Ogre::OverlayElement* overview_map_text_;
 };

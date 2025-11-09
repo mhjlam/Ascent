@@ -8,11 +8,11 @@ PatrolEnemy::PatrolEnemy(Ogre::Entity* entity, Ogre::SceneNode* node) : MovingEn
 	health_ = 100;
 
 	// create patrol path, walk in a square
-	Ogre::Vector3 nodePosition = main_node_->getPosition();
-	patrol_points_.push_back(Ogre::Vector3(nodePosition.x + 500, nodePosition.y, nodePosition.z));
-	patrol_points_.push_back(Ogre::Vector3(nodePosition.x + 500, nodePosition.y, nodePosition.z - 500));
-	patrol_points_.push_back(Ogre::Vector3(nodePosition.x, nodePosition.y, nodePosition.z - 500));
-	patrol_points_.push_back(Ogre::Vector3(nodePosition.x, nodePosition.y, nodePosition.z));
+	Ogre::Vector3 node_position = main_node_->getPosition();
+	patrol_points_.push_back(Ogre::Vector3(node_position.x + 500, node_position.y, node_position.z));
+	patrol_points_.push_back(Ogre::Vector3(node_position.x + 500, node_position.y, node_position.z - 500));
+	patrol_points_.push_back(Ogre::Vector3(node_position.x, node_position.y, node_position.z - 500));
+	patrol_points_.push_back(Ogre::Vector3(node_position.x, node_position.y, node_position.z));
 
 	// set movementspeed
 	speed_ = 100;

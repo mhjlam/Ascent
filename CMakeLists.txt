@@ -165,10 +165,10 @@ endif()
 # Copy Ogre configuration files to output directories
 add_custom_command(TARGET Ascent POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    "${CMAKE_SOURCE_DIR}/plugins.cfg"
-    "${CMAKE_SOURCE_DIR}/plugins_d.cfg"
-    "${CMAKE_SOURCE_DIR}/resources.cfg"
-    "${CMAKE_SOURCE_DIR}/resources_d.cfg"
+    "${CMAKE_SOURCE_DIR}/cfg/plugins.cfg"
+    "${CMAKE_SOURCE_DIR}/cfg/plugins_d.cfg"
+    "${CMAKE_SOURCE_DIR}/cfg/resources.cfg"
+    "${CMAKE_SOURCE_DIR}/cfg/resources_d.cfg"
     "$<IF:$<CONFIG:Debug>,${BIN_DEBUG_DIR},${BIN_RELEASE_DIR}>"
     COMMENT "Copying Ogre configuration files to output directory"
 )

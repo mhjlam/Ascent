@@ -20,9 +20,9 @@ LevelTwo::LevelTwo() : Map() {
     set_ceiling_material("Ascent/SeamlessConcrete2");
     set_wall_material("Ascent/SeamlessConcrete");
     set_cube_brush_thickness(500.0f);
-    build_cube_brush("startArea", -3000.0f, -500.0f, -3000.0f, 6000.0f, 3000.0f, 6000.0f, CUBE_Z_AXIS);
-    build_cube_brush("middleArea", -3000.0f, -500.0f, 3000.0f, 6000.0f, 3000.0f, 6000.0f, CUBE_Z_AXIS);
-    build_cube_brush("endArea", -3000.0f, -500.0f, 9000.0f, 6000.0f, 3000.0f, 6000.0f, CUBE_Z_AXIS);
+    build_cube_brush("startArea", -3000.0f, -500.0f, -3000.0f, 6000.0f, 3000.0f, 6000.0f, CubePassThrough::AxisZ);
+    build_cube_brush("middleArea", -3000.0f, -500.0f, 3000.0f, 6000.0f, 3000.0f, 6000.0f, CubePassThrough::AxisZ);
+    build_cube_brush("endArea", -3000.0f, -500.0f, 9000.0f, 6000.0f, 3000.0f, 6000.0f, CubePassThrough::AxisZ);
 
     create_brush("startAreaBack", BrushType::Wall);
         set_brush_location(-2500.0f, 0.0f, -3000.0f);

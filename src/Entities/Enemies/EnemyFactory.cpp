@@ -14,48 +14,52 @@ EnemyFactory& EnemyFactory::instance() {
 	return instance;
 }
 
-EnemyFactory::EnemyFactory() : num_enemies_(0) {}
 
-void EnemyFactory::create_enemy(const Ogre::String& name, EntityType enemyType, Ogre::Vector3 position) {
-	std::string meshFile = (enemyType == EntityType::EnemyFlying ? "razor.mesh" : "robot.mesh");
+EnemyFactory::EnemyFactory() 
+: num_enemies_(0) {
+}
+
+
+void EnemyFactory::create_enemy(const Ogre::String& name, EntityType enemy_type, Ogre::Vector3 position) {
+	std::string mesh_file = (enemy_type == EntityType::EnemyFlying ? "razor.mesh" : "robot.mesh");
 	
-	Ogre::Entity* enemyEntity = Common::scene_manager->createEntity(name, meshFile);
+	Ogre::Entity* enemy_entity = Common::scene_manager->createEntity(name, mesh_file);
 	
 	// Fix material assignment - use our examples.material file in General group
-	std::string materialName = (enemyType == EntityType::EnemyFlying ? "Examples/Razor" : "Examples/Robot");
-	for (unsigned int i = 0; i < enemyEntity->getNumSubEntities(); ++i) {
-		enemyEntity->getSubEntity(i)->setMaterialName(materialName, "General");
+	std::string material_name = (enemy_type == EntityType::EnemyFlying ? "Examples/Razor" : "Examples/Robot");
+	for (unsigned int i = 0; i < enemy_entity->getNumSubEntities(); ++i) {
+		enemy_entity->getSubEntity(i)->setMaterialName(material_name, "General");
 	}
 	
-	enemyEntity->setCastShadows(true);
-	enemyEntity->setQueryFlags(static_cast<Ogre::uint32>(QueryFlags::Enemy));	
+	enemy_entity->setCastShadows(true);
+	enemy_entity->setQueryFlags(static_cast<Ogre::uint32>(QueryFlags::Enemy));	
 
-	Ogre::SceneNode* enemyNode = Common::scene_manager->getRootSceneNode()->createChildSceneNode(name + "Node", position);
-	enemyNode->attachObject(enemyEntity);
-    enemyNode->scale(Ogre::Vector3(5.0f));
+	Ogre::SceneNode* enemy_node = Common::scene_manager->getRootSceneNode()->createChildSceneNode(name + "Node", position);
+	enemy_node->attachObject(enemy_entity);
+    enemy_node->scale(Ogre::Vector3(5.0f));
     
 	std::unique_ptr<Enemy> enemy;
-	switch (enemyType) {
+	switch (enemy_type) {
 	    case EntityType::EnemyStationary:
-		    enemy = std::make_unique<Enemy>(enemyEntity, enemyNode);
+		    enemy = std::make_unique<Enemy>(enemy_entity, enemy_node);
 			break;
 
 	    case EntityType::EnemyPatrol:
-		    enemy = std::make_unique<PatrolEnemy>(enemyEntity, enemyNode);
+		    enemy = std::make_unique<PatrolEnemy>(enemy_entity, enemy_node);
 			break;
 
 	    case EntityType::EnemyFlying:
-		    enemy = std::make_unique<FlyingEnemy>(enemyEntity, enemyNode);
+		    enemy = std::make_unique<FlyingEnemy>(enemy_entity, enemy_node);
 			break;
 	
         default: // nothing was created at this point, so no memory leaks
             throw Ogre::Exception(Ogre::Exception::ERR_INVALIDPARAMS, "Cannot construct desired type in EnemyFactory / not an enemy type", "Ascent");
     }
 
-    enemy->set_type(enemyType);
+    enemy->set_type(enemy_type);
     enemy->set_start_position(position);
 
-	enemyNode->setUserAny(Ogre::Any(enemy.get()));
+	enemy_node->setUserAny(Ogre::Any(enemy.get()));
     
     // Transfer ownership to GameWorld
     GameWorld::instance().register_entity(std::move(enemy));

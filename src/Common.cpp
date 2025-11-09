@@ -2,6 +2,7 @@
 
 #include "Entities/Player/Player.hpp"
 
+
 Player* Common::player = nullptr;
 GameState Common::game_state;
 
@@ -29,7 +30,4 @@ void Common::cleanup() {
 		Common::scene_manager->destroyQuery(ray_scene_query);
 		ray_scene_query = nullptr;
 	}
-	
-	// Note: All other Ogre objects (root, cameras, scene managers, render window) 
-	// are owned and managed by ApplicationContext/Ogre - DO NOT DELETE THEM
 }

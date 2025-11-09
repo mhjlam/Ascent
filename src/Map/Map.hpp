@@ -4,13 +4,14 @@
 
 #include "Constants.hpp"
 
+
 struct MapInfo {
     Ogre::String name;
-    Ogre::ColourValue ambientLight;
-    Ogre::ColourValue fogColour;
-    Ogre::Real fogStart;
-    Ogre::Real fogEnd;
-    bool fogEnabled;
+    Ogre::ColourValue ambient_light;
+    Ogre::ColourValue fog_color;
+    Ogre::Real fog_start;
+    Ogre::Real fog_end;
+    bool fog_enabled;
 };
 
 struct EntityInfo {
@@ -21,21 +22,21 @@ struct EntityInfo {
 };
 
 struct LightInfo : EntityInfo {
-    Ogre::ColourValue colour;
+    Ogre::ColourValue color;
 };
 
 struct BrushInfo : EntityInfo {
-    Ogre::String materialName;
+    Ogre::String material_name;
     Ogre::Vector3 dimensions;
-    BrushType brushType; // e.g. wall/ceiling/floor
-    bool castShadows;
+    BrushType brush_type; // e.g. wall/ceiling/floor
+    bool cast_shadows;
 };
 
-enum CubePassThrough {  
-    CUBE_NONE,      // leave no sides out (default)
-    CUBE_X_AXIS,    // leave the left and right walls
-    CUBE_Y_AXIS,    // leave the ceiling and floor
-    CUBE_Z_AXIS     // leave the front and back walls
+enum class CubePassThrough {  
+    None,       // leave no sides out (default)
+    AxisX,      // leave the left and right walls
+    AxisY,      // leave the ceiling and floor
+    AxisZ,      // leave the front and back walls
 };
 
    
@@ -70,7 +71,7 @@ public: // getters
     }
 
 protected:
-    void set_map_name(const Ogre::String& mapName);
+    void set_map_name(const Ogre::String& map_name);
     void set_map_ambient_light(Ogre::Real r, Ogre::Real g, Ogre::Real b);
     void set_map_fog_enable(bool enableFog);
     void set_map_fog_color(Ogre::Real r, Ogre::Real g, Ogre::Real b);
@@ -80,25 +81,20 @@ protected:
     void create_brush(const Ogre::String& name, BrushType type);
     void set_brush_location(Ogre::Real x, Ogre::Real y, Ogre::Real z);
     void set_brush_size(Ogre::Real width, Ogre::Real height, Ogre::Real depth);
-    void set_brush_shadows_enabled(bool enableShadowCasting);
-    void set_brush_material(const Ogre::String& materialName);
+    void set_brush_shadows_enabled(bool enable_shadow_casting);
+    void set_brush_material(const Ogre::String& material_name);
     
     // 'prefabs'
-    void build_cube_brush(const Ogre::String& cubeName, 
-                        Ogre::Real x, Ogre::Real y, Ogre::Real z, 
+    void build_cube_brush(const Ogre::String& cube_name, Ogre::Real x, Ogre::Real y, Ogre::Real z, 
                         Ogre::Real width, Ogre::Real height, Ogre::Real depth, 
-                        CubePassThrough passThrough = CUBE_NONE);
-    void build_column(const Ogre::String& name, 
-                      const Ogre::String& materialName, 
-                      Ogre::Real x, Ogre::Real y, Ogre::Real z, 
-                      Ogre::Real width, Ogre::Real height, Ogre::Real depth);
-    void build_launchpad(const Ogre::String& name, 
-                         Ogre::Real x, Ogre::Real y, Ogre::Real z, 
-                         bool isExit = false);
+                        CubePassThrough passthrough = CubePassThrough::None);
+    void build_column(const Ogre::String& name, const Ogre::String& material_name, 
+                      Ogre::Real x, Ogre::Real y, Ogre::Real z, Ogre::Real width, Ogre::Real height, Ogre::Real depth);
+    void build_launchpad(const Ogre::String& name, Ogre::Real x, Ogre::Real y, Ogre::Real z, bool is_exit = false);
     void set_cube_brush_thickness(Ogre::Real thickness);
-    void set_floor_material(const Ogre::String& materialName); 
-    void set_ceiling_material(const Ogre::String& materialName); 
-    void set_wall_material(const Ogre::String& materialName);  
+    void set_floor_material(const Ogre::String& material_name); 
+    void set_ceiling_material(const Ogre::String& material_name); 
+    void set_wall_material(const Ogre::String& material_name);  
     
     // lights
     void create_light(const Ogre::String& name);

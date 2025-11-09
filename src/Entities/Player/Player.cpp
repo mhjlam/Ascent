@@ -11,8 +11,8 @@
 #include "Entities/Projectiles/ProjectileFactory.hpp"
 
 
-Player::Player(Ogre::SceneNode* const playerNode)
-: GameEntity(nullptr, playerNode)
+Player::Player(Ogre::SceneNode* const player_node)
+: GameEntity(nullptr, player_node)
 , move_forward_(false)
 , move_backward_(false)
 , move_left_(false)
@@ -35,8 +35,8 @@ Player::Player(Ogre::SceneNode* const playerNode)
 
 	// turret nodes
 	turret_center_node_ = main_node_->createChildSceneNode("node_player_turret_center", Ogre::Vector3(0.0f, -100.0f, 0.0f));
-	turret_left_node_	  = main_node_->createChildSceneNode("node_player_turret_left", Ogre::Vector3(-150.0f, -50.0f, 0.0f));
-	turret_right_node_  = main_node_->createChildSceneNode("node_player_turret_right", Ogre::Vector3(150.0f, -50.0f, 0.0f));
+	turret_left_node_ = main_node_->createChildSceneNode("node_player_turret_left", Ogre::Vector3(-150.0f, -50.0f, 0.0f));
+	turret_right_node_ = main_node_->createChildSceneNode("node_player_turret_right", Ogre::Vector3(150.0f, -50.0f, 0.0f));
 
 	// Flashlight disabled - now handled in GameWorld.cpp for better control
 	flashlight_ = nullptr;
@@ -58,8 +58,8 @@ void Player::update(const Ogre::Real& elapsed) {
 	detect_collisions();
 }
 
-void Player::inject_key_down(const OgreBites::KeyboardEvent& evt) {
-	switch (evt.keysym.sym) {
+void Player::inject_key_down(const OgreBites::KeyboardEvent& event) {
+	switch (event.keysym.sym) {
 		case 'w':
 			move_forward_ = true;
 			break;
@@ -87,8 +87,8 @@ void Player::inject_key_down(const OgreBites::KeyboardEvent& evt) {
 	}
 }
 
-void Player::inject_key_up(const OgreBites::KeyboardEvent& evt) {
-	switch (evt.keysym.sym) {
+void Player::inject_key_up(const OgreBites::KeyboardEvent& event) {
+	switch (event.keysym.sym) {
 		case 'w':
 			move_forward_	= false;
 			 break;
@@ -116,61 +116,66 @@ void Player::inject_key_up(const OgreBites::KeyboardEvent& evt) {
 	}
 }
 
-void Player::inject_mouse_move(const OgreBites::MouseMotionEvent& evt) {
-	main_node_->rotate(Ogre::Vector3::UNIT_Y, Ogre::Radian(Ogre::Degree(-evt.xrel * 0.15f)));
-	main_node_->rotate(Ogre::Vector3::UNIT_X, Ogre::Radian(Ogre::Degree(-evt.yrel * 0.15f)));
+void Player::inject_mouse_move(const OgreBites::MouseMotionEvent& event) {
+	main_node_->rotate(Ogre::Vector3::UNIT_Y, Ogre::Radian(Ogre::Degree(-event.xrel * 0.15f)));
+	main_node_->rotate(Ogre::Vector3::UNIT_X, Ogre::Radian(Ogre::Degree(-event.yrel * 0.15f)));
 }
 
-void Player::inject_mouse_down(const OgreBites::MouseButtonEvent& evt) {
-	if (evt.button == OgreBites::BUTTON_LEFT) { // shoot
+void Player::inject_mouse_down(const OgreBites::MouseButtonEvent& event) {
+	if (event.button == OgreBites::BUTTON_LEFT) { // shoot
 		shooting_ = true;
 	}
-	else if (evt.button == OgreBites::BUTTON_RIGHT) {
+	else if (event.button == OgreBites::BUTTON_RIGHT) {
 		turret_type_ = (static_cast<int>(turret_type_) + 1 != 4) 
 			? static_cast<TurretType>(static_cast<int>(turret_type_) + 1) 
 			: static_cast<TurretType>(0);
 	}
 }
 
-void Player::inject_mouse_up(const OgreBites::MouseButtonEvent& evt) {
-	if (evt.button == OgreBites::BUTTON_LEFT) {
+void Player::inject_mouse_up(const OgreBites::MouseButtonEvent& event) {
+	if (event.button == OgreBites::BUTTON_LEFT) {
 		shooting_ = false;
 	}
 }
 
 void Player::shoot() {
 	Ogre::Vector3 direction = Common::camera->getDerivedDirection();
-	Ogre::Vector3 startposLeft = turret_left_node_->_getDerivedPosition();
-	Ogre::Vector3 startposCenter = turret_center_node_->_getDerivedPosition();
-	Ogre::Vector3 startposRight = turret_right_node_->_getDerivedPosition();
-	Ogre::Quaternion orientationLeft = turret_left_node_->_getDerivedOrientation();
-	Ogre::Quaternion orientationCenter = turret_center_node_->_getDerivedOrientation();
-	Ogre::Quaternion orientationRight = turret_right_node_->_getDerivedOrientation();
+	Ogre::Vector3 position_left = turret_left_node_->_getDerivedPosition();
+	Ogre::Vector3 position_center = turret_center_node_->_getDerivedPosition();
+	Ogre::Vector3 position_right = turret_right_node_->_getDerivedPosition();
+	Ogre::Quaternion orientation_left = turret_left_node_->_getDerivedOrientation();
+	Ogre::Quaternion orientation_center = turret_center_node_->_getDerivedOrientation();
+	Ogre::Quaternion orientation_right = turret_right_node_->_getDerivedOrientation();
 
     switch (turret_type_) {
 		default:
 		case TurretType::Single:
-			ProjectileFactory::instance().create_projectile(EntityType::PlayerProjectileType, startposCenter, direction, orientationCenter, true);
+			ProjectileFactory::instance().create_projectile(
+				EntityType::PlayerProjectileType, position_center, direction, orientation_center, true);
 			break;
 
 		case TurretType::Double:
-			ProjectileFactory::instance().create_projectile(EntityType::PlayerProjectileType, startposLeft, direction, orientationLeft, true);
-			ProjectileFactory::instance().create_projectile(EntityType::PlayerProjectileType, startposRight, direction, orientationRight, true);
+			ProjectileFactory::instance().create_projectile(
+				EntityType::PlayerProjectileType, position_left, direction, orientation_left, true);
+			ProjectileFactory::instance().create_projectile(
+				EntityType::PlayerProjectileType, position_right, direction, orientation_right, true);
 			break;
 
 		case TurretType::Triple:
-			ProjectileFactory::instance().create_projectile(EntityType::PlayerProjectileType, startposLeft, direction, orientationLeft, true);
-			ProjectileFactory::instance().create_projectile(EntityType::PlayerProjectileType, startposCenter, direction, orientationCenter, true);
-			ProjectileFactory::instance().create_projectile(EntityType::PlayerProjectileType, startposRight, direction, orientationRight, true);
+			ProjectileFactory::instance().create_projectile(
+				EntityType::PlayerProjectileType, position_left, direction, orientation_left, true);
+			ProjectileFactory::instance().create_projectile(
+				EntityType::PlayerProjectileType, position_center, direction, orientation_center, true);
+			ProjectileFactory::instance().create_projectile(
+				EntityType::PlayerProjectileType, position_right, direction, orientation_right, true);
 			break;
 			
 		case TurretType::Alternate: {
            Ogre::uint modulo = ProjectileFactory::instance().get_num_player_projectiles() % 2;
-
-			Ogre::Vector3 startpos = (modulo == 0) ? startposLeft : startposRight;
-			Ogre::Quaternion orientation = (modulo == 0) ? orientationLeft : orientationRight;
-
-			ProjectileFactory::instance().create_projectile(EntityType::PlayerProjectileType, startpos, direction, orientation, true);
+			Ogre::Vector3 start_pos = (modulo == 0) ? position_left : position_right;
+			Ogre::Quaternion orientation = (modulo == 0) ? orientation_left : orientation_right;
+			ProjectileFactory::instance().create_projectile(
+				EntityType::PlayerProjectileType, start_pos, direction, orientation, true);
 			break;
 		}
 	}
@@ -181,10 +186,10 @@ void Player::accelerate(const Ogre::Real& elapsed) {
 	Ogre::Vector3 acceleration = Ogre::Vector3::ZERO;
 
 	// Get camera orientation vectors from the camera's parent scene node
-	Ogre::Quaternion camOrientation = Common::camera->getParentSceneNode()->getOrientation();
-	Ogre::Vector3 forward = camOrientation * Ogre::Vector3::NEGATIVE_UNIT_Z;
-	Ogre::Vector3 right = camOrientation * Ogre::Vector3::UNIT_X;
-	Ogre::Vector3 up = camOrientation * Ogre::Vector3::UNIT_Y;
+	Ogre::Quaternion camera_orientation = Common::camera->getParentSceneNode()->getOrientation();
+	Ogre::Vector3 forward = camera_orientation * Ogre::Vector3::NEGATIVE_UNIT_Z;
+	Ogre::Vector3 right = camera_orientation * Ogre::Vector3::UNIT_X;
+	Ogre::Vector3 up = camera_orientation * Ogre::Vector3::UNIT_Y;
 
 	if (move_forward_) {
 		acceleration += forward;
@@ -214,17 +219,20 @@ void Player::accelerate(const Ogre::Real& elapsed) {
 	}
 
 	// epsilon: difference between 1 and smallest value greater than 1 representable by Ogre::Real
-	Ogre::Real tooSmall = std::numeric_limits<Ogre::Real>::epsilon();
+	Ogre::Real too_small = std::numeric_limits<Ogre::Real>::epsilon();
 
-	if (velocity_.squaredLength() > top_speed_ * top_speed_) { // keep camera velocity below top speed
+	// keep camera velocity below top speed
+	if (velocity_.squaredLength() > top_speed_ * top_speed_) {
 		velocity_.normalise();
 		velocity_ *= top_speed_;
 	}
-	else if (velocity_.squaredLength() < tooSmall * tooSmall) { // set velocity to 0 if difference becomes too small
+	// set velocity to 0 if difference becomes too small
+	else if (velocity_.squaredLength() < too_small * too_small) {
 		velocity_ = Ogre::Vector3::ZERO;
 	}
 
-	if (velocity_ != Ogre::Vector3::ZERO) { // translate if previous conditions meet
+	// translate if previous conditions meet
+	if (velocity_ != Ogre::Vector3::ZERO) {
 		// Use TS_PARENT because velocity is calculated in world space
 		main_node_->translate(velocity_, Ogre::SceneNode::TS_PARENT);
 	}
@@ -234,24 +242,32 @@ void Player::roll(const Ogre::Real& elapsed) {
 	Ogre::Real rotationSpeed = top_rotation_ * elapsed;
 
 	if (roll_left_) {
-		main_node_->rotate(Ogre::Vector3::UNIT_Z, Ogre::Radian(Ogre::Degree(rotationSpeed)), Ogre::SceneNode::TS_LOCAL);
+		main_node_->rotate(Ogre::Vector3::UNIT_Z, 
+			Ogre::Radian(Ogre::Degree(rotationSpeed)), Ogre::SceneNode::TS_LOCAL);
 	}
 	else if (roll_right_) {
-		main_node_->rotate(Ogre::Vector3::NEGATIVE_UNIT_Z, Ogre::Radian(Ogre::Degree(rotationSpeed)), Ogre::SceneNode::TS_LOCAL);
+		main_node_->rotate(Ogre::Vector3::NEGATIVE_UNIT_Z, 
+			Ogre::Radian(Ogre::Degree(rotationSpeed)), Ogre::SceneNode::TS_LOCAL);
 	}
 }
 
 void Player::detect_collisions() {
-	Ogre::Vector3 currentpos = main_node_->_getDerivedPosition();
+	Ogre::Vector3 current_position = main_node_->_getDerivedPosition();
 
-	Ogre::Ray downRay(Ogre::Vector3(currentpos.x, currentpos.y + 50.0f, currentpos.z), Ogre::Vector3::NEGATIVE_UNIT_Y);
-	Ogre::Ray upRay(Ogre::Vector3(currentpos.x, currentpos.y - 50.0f, currentpos.z), Ogre::Vector3::UNIT_Y);
-	Ogre::Ray leftRay(Ogre::Vector3(currentpos.x + 50.0f, currentpos.y, currentpos.z),Ogre::Vector3::NEGATIVE_UNIT_X);
-	Ogre::Ray rightRay(Ogre::Vector3(currentpos.x - 50.0f, currentpos.y, currentpos.z), Ogre::Vector3::UNIT_X);
-	Ogre::Ray frontRay(Ogre::Vector3(currentpos.x, currentpos.y, currentpos.z - 50.0f), Ogre::Vector3::NEGATIVE_UNIT_Z);
-	Ogre::Ray backRay(Ogre::Vector3(currentpos.x, currentpos.y, currentpos.z + 50.0f), Ogre::Vector3::UNIT_Z);
+	Ogre::Ray ray_down(Ogre::Vector3(current_position.x, current_position.y + 50.0f, current_position.z), 
+		Ogre::Vector3::NEGATIVE_UNIT_Y);
+	Ogre::Ray ray_up(Ogre::Vector3(current_position.x, current_position.y - 50.0f, current_position.z), 
+		Ogre::Vector3::UNIT_Y);
+	Ogre::Ray ray_left(Ogre::Vector3(current_position.x + 50.0f, current_position.y, current_position.z), 
+		Ogre::Vector3::NEGATIVE_UNIT_X);
+	Ogre::Ray ray_right(Ogre::Vector3(current_position.x - 50.0f, current_position.y, current_position.z), 
+		Ogre::Vector3::UNIT_X);
+	Ogre::Ray ray_front(Ogre::Vector3(current_position.x, current_position.y, current_position.z - 50.0f), 
+		Ogre::Vector3::NEGATIVE_UNIT_Z);
+	Ogre::Ray ray_back(Ogre::Vector3(current_position.x, current_position.y, current_position.z + 50.0f), 
+		Ogre::Vector3::UNIT_Z);
 
-	Ogre::Ray rays[] = { downRay, upRay, leftRay, rightRay, frontRay, backRay };
+	Ogre::Ray rays[] = { ray_down, ray_up, ray_left, ray_right, ray_front, ray_back };
 	Ogre::RaySceneQueryResult::iterator it;
 	
 	for (int i = 0; i < 6; ++i) { // each ray
@@ -265,17 +281,18 @@ void Player::detect_collisions() {
 			if (it->movable->getQueryFlags() == static_cast<Ogre::uint32>(QueryFlags::Wall)) {
 				Ogre::Vector3 origin = rays[i].getOrigin();
 				Ogre::Vector3 direction = rays[i].getDirection();
-				Ogre::Real directionLength = direction.length();
+				Ogre::Real direction_length = direction.length();
 				Ogre::Real distance = it->distance;
 
-				direction /= directionLength; // direction is now a unit vector
-				Ogre::Vector3 intersectionpos = origin + (direction * distance); // position of the intersection
+				direction /= direction_length; // direction is now a unit vector
+				Ogre::Vector3 intersection = origin + (direction * distance); // position of the intersection
 
-				if (intersectionpos.squaredDistance(currentpos) <= 100.0f*100.0f) {
+				if (intersection.squaredDistance(current_position) <= 100.0f*100.0f) {
 					// check if the player hit the ending point
                 	if (it->movable->isAttached()) {
                     	// note that the BrushEntity is attached to the SceneNode, not the Ogre::Entity itself
-                    	const BrushEntity* const brush = Ogre::any_cast<BrushEntity*>(it->movable->getParentNode()->getUserAny());
+                    	const BrushEntity* const brush = 
+							Ogre::any_cast<BrushEntity*>(it->movable->getParentNode()->getUserAny());
 
                     	// this is the ending point
                     	if (brush->is_brush_type(BrushType::Exit)) {
@@ -286,22 +303,28 @@ void Player::detect_collisions() {
                 	}
 
 					if (i==0) {
-						main_node_->translate(Ogre::Vector3(currentpos.x, intersectionpos.y + 100.0f, currentpos.z) - currentpos);
+						main_node_->translate(Ogre::Vector3(current_position.x, 
+							intersection.y + 100.0f, current_position.z) - current_position);
 					}
 					else if (i==1) {
-						main_node_->translate(Ogre::Vector3(currentpos.x, intersectionpos.y - 100.0f, currentpos.z) - currentpos);
+						main_node_->translate(Ogre::Vector3(current_position.x, 
+							intersection.y - 100.0f, current_position.z) - current_position);
 					}
 					else if (i==2) {
-						main_node_->translate(Ogre::Vector3(intersectionpos.x + 100.0f, currentpos.y, currentpos.z) - currentpos);
+						main_node_->translate(Ogre::Vector3(intersection.x + 100.0f, 
+							current_position.y, current_position.z) - current_position);
 					}
 					else if (i==3) {
-						main_node_->translate(Ogre::Vector3(intersectionpos.x - 100.0f, currentpos.y, currentpos.z) - currentpos);
+						main_node_->translate(Ogre::Vector3(intersection.x - 100.0f, 
+							current_position.y, current_position.z) - current_position);
 					}
 					else if (i==4) {
-						main_node_->translate(Ogre::Vector3(currentpos.x, currentpos.y, intersectionpos.z + 100.0f) - currentpos);
+						main_node_->translate(Ogre::Vector3(current_position.x, 
+							current_position.y, intersection.z + 100.0f) - current_position);
 					}
 					else if (i==5) {
-						main_node_->translate(Ogre::Vector3(currentpos.x, currentpos.y, intersectionpos.z - 100.0f) - currentpos);
+						main_node_->translate(Ogre::Vector3(current_position.x, 
+							current_position.y, intersection.z - 100.0f) - current_position);
 					}
 
 					break;
@@ -314,8 +337,8 @@ void Player::detect_collisions() {
 void Player::reset_position() {
 	stop_movement();
 
-	Ogre::Vector3 currentpos = main_node_->_getDerivedPosition();
-	main_node_->translate(start_position_ - currentpos);
+	Ogre::Vector3 current_position = main_node_->_getDerivedPosition();
+	main_node_->translate(start_position_ - current_position);
 }
 
 void Player::stop_movement() {

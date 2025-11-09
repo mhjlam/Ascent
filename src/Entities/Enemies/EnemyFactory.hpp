@@ -16,7 +16,7 @@ public:
 	EnemyFactory(EnemyFactory&&) = delete;
 	EnemyFactory& operator=(EnemyFactory&&) = delete;
 	
-	void create_enemy(const Ogre::String& name, EntityType enemyType, Ogre::Vector3 position);
+	void create_enemy(const Ogre::String& name, EntityType enemy_type, Ogre::Vector3 position);
 
 private:
 	EnemyFactory();

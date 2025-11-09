@@ -18,11 +18,12 @@ Projectile::Projectile(Ogre::Entity* const entity,
 
 void Projectile::update(const Ogre::Real& elapsed) {
     // check for collision
-    Ogre::Ray frontRay(get_position(), get_direction());
+    Ogre::Ray front_ray(get_position(), get_direction());
 
-	Common::ray_scene_query->setRay(frontRay);
+	Common::ray_scene_query->setRay(front_ray);
 	Common::ray_scene_query->setSortByDistance(true, 5);
-    Common::ray_scene_query->setQueryMask(static_cast<Ogre::uint32>(QueryFlags::Wall) | static_cast<Ogre::uint32>(QueryFlags::Enemy));
+    Common::ray_scene_query->setQueryMask(
+        static_cast<Ogre::uint32>(QueryFlags::Wall) | static_cast<Ogre::uint32>(QueryFlags::Enemy));
 	
 	Ogre::RaySceneQueryResult::iterator it;
 	Ogre::RaySceneQueryResult& result = Common::ray_scene_query->execute();

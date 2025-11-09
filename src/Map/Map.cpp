@@ -8,7 +8,7 @@ Map::Map()
 
 Map::~Map() {
     // fastest way of deleting pointers in three different vectors
-    size_t max = std::max(std::max(brushes_.size(), lights_.size()), entities_.size()); // determine largest vector
+    size_t max = std::max(std::max(brushes_.size(), lights_.size()), entities_.size());
  
     for (size_t i = 0; i < max; ++i) {
         if (i < brushes_.size()) {
@@ -46,28 +46,28 @@ void Map::set_map_name(const Ogre::String& mapName) {
 }
 
 void Map::set_map_ambient_light(Ogre::Real r, Ogre::Real g, Ogre::Real b) {
-    set_color_member(map_info_.ambientLight, r, g, b);
+    set_color_member(map_info_.ambient_light, r, g, b);
 }
 
-void Map::set_map_fog_enable(bool enableFog) {
-    map_info_.fogEnabled = enableFog;
+void Map::set_map_fog_enable(bool enable_fog) {
+    map_info_.fog_enabled = enable_fog;
 }
 
 void Map::set_map_fog_color(Ogre::Real r, Ogre::Real g, Ogre::Real b) {
-    set_color_member(map_info_.fogColour, r, g, b);
+    set_color_member(map_info_.fog_color, r, g, b);
 }
 
 void Map::set_map_fog_range(Ogre::Real start, Ogre::Real end) {
-    map_info_.fogStart = start;
-    map_info_.fogEnd = end;
+    map_info_.fog_start = start;
+    map_info_.fog_end = end;
 }
 
 void Map::create_brush(const Ogre::String& name, BrushType type) {
     active_brush_ = new BrushInfo();
     active_brush_->id = name;
     active_brush_->type = EntityType::Brush;
-    active_brush_->brushType = type;
-    active_brush_->castShadows = true; //otherwise light will go right through it, but it can be disabled if neccesary
+    active_brush_->brush_type = type;
+    active_brush_->cast_shadows = true; //otherwise light will go right through it, but it can be disabled if neccesary
     brushes_.push_back(active_brush_);    
 }
 
@@ -79,28 +79,28 @@ void Map::set_brush_size(Ogre::Real width, Ogre::Real height, Ogre::Real depth) 
     set_vector_member(active_brush_->dimensions, width, height, depth);
 }
 
-void Map::set_brush_shadows_enabled(bool enableShadowCasting) {
-    active_brush_->castShadows = enableShadowCasting;
+void Map::set_brush_shadows_enabled(bool enable_shadow_casting) {
+    active_brush_->cast_shadows = enable_shadow_casting;
 }
 
-void Map::set_brush_material(const Ogre::String& materialName) {
-    active_brush_->materialName = materialName;
+void Map::set_brush_material(const Ogre::String& material_name) {
+    active_brush_->material_name = material_name;
 }
 
 void Map::build_cube_brush(const Ogre::String& cubeName, 
                          Ogre::Real x, Ogre::Real y, Ogre::Real z, 
                          Ogre::Real width, Ogre::Real height, Ogre::Real depth, 
-                         CubePassThrough passThrough) {
+                         CubePassThrough passthrough) {
     const Ogre::Real thickness = cube_thickness_;
-    Ogre::Real wallHeight = height  - (2* thickness);
+    Ogre::Real wall_height = height  - (2* thickness);
 
-    if (passThrough == CUBE_Y_AXIS) {
-        wallHeight = height;
+    if (passthrough == CubePassThrough::AxisY) {
+        wall_height = height;
         y -= thickness;
         height += thickness;
     }
 
-    if (passThrough != CUBE_Y_AXIS) {
+    if (passthrough != CubePassThrough::AxisY) {
         create_brush(cubeName + "_floor", BrushType::Floor);
             set_brush_location(x, y, z);
             set_brush_size(width, thickness, depth);
@@ -111,76 +111,74 @@ void Map::build_cube_brush(const Ogre::String& cubeName,
             set_brush_material(ceiling_material_);
     }
 
-    if (passThrough != CUBE_X_AXIS) {
+    if (passthrough != CubePassThrough::AxisX) {
         create_brush(cubeName + "_leftwall", BrushType::Wall);
             set_brush_location(x, y + thickness, z);
-            set_brush_size(thickness, wallHeight, depth);
+            set_brush_size(thickness, wall_height, depth);
             set_brush_material(wall_material_);
         
         create_brush(cubeName + "_rightwall", BrushType::Wall);
             set_brush_location(x + width - thickness, y + thickness, z);
-            set_brush_size(thickness, wallHeight, depth);
+            set_brush_size(thickness, wall_height, depth);
             set_brush_material(wall_material_);
     }
 
-    if (passThrough != CUBE_Z_AXIS) {
+    if (passthrough != CubePassThrough::AxisZ) {
         /*
          *  The walls are not all of equal width. Left and Right walls are wider and the Front and Back walls fill up the 'gap'.
-         *  However, because the Left and Right walls may might be omitted (if passThrough == CUBE_X_AXIS),
+         *  However, because the Left and Right walls may might be omitted (if passthrough == CubePassThrough::AxisX),
          *  the Front and Back walls must be stretched a little to make up for lost space.
          */
 
         create_brush(cubeName + "_backwall", BrushType::Wall);
-            if (passThrough == CUBE_X_AXIS) {
+            if (passthrough == CubePassThrough::AxisX) {
                 set_brush_location(x, y + thickness, z);
-                set_brush_size(width, wallHeight, thickness); // compensate width
+                set_brush_size(width, wall_height, thickness); // compensate width
             }
             else {
                 set_brush_location(x + thickness, y + thickness, z);
-                set_brush_size(width - (2* thickness), wallHeight, thickness);
+                set_brush_size(width - (2* thickness), wall_height, thickness);
             }
             set_brush_material(wall_material_);
 
         create_brush(cubeName + "_frontwall", BrushType::Wall);
-            if (passThrough == CUBE_X_AXIS) {
+            if (passthrough == CubePassThrough::AxisX) {
                 set_brush_location(x, y + thickness, z + depth - thickness);
-                set_brush_size(width, wallHeight, thickness);
+                set_brush_size(width, wall_height, thickness);
             }
             else {
                 set_brush_location(x + thickness, y + thickness, z + depth - thickness);
-                set_brush_size(width - (2* thickness), wallHeight, thickness);
+                set_brush_size(width - (2* thickness), wall_height, thickness);
             }
             set_brush_material(wall_material_);
     }
 }
 
 void Map::build_column(const Ogre::String& name, 
-                      const Ogre::String& materialName, 
+                      const Ogre::String& material_name, 
                       Ogre::Real x, Ogre::Real y, Ogre::Real z, 
                       Ogre::Real width, Ogre::Real height, Ogre::Real depth) {
-    Ogre::Real baseHeight = 200.0f;
+    Ogre::Real base_height = 200.0f;
 
     create_brush(name + "_pilar_base", BrushType::Wall);
         set_brush_location(x, y, z); 
-        set_brush_size(width, baseHeight, depth);   
-        set_brush_material(materialName);
+        set_brush_size(width, base_height, depth);   
+        set_brush_material(material_name);
 
     create_brush(name + "_pilar_top", BrushType::Wall);
-        set_brush_location(x, y + height - baseHeight, z); 
-        set_brush_size(width, baseHeight, depth);   
-        set_brush_material(materialName);
+        set_brush_location(x, y + height - base_height, z); 
+        set_brush_size(width, base_height, depth);   
+        set_brush_material(material_name);
 
     create_brush(name, BrushType::Wall);
-        set_brush_location(x + (width * 0.25f), y + baseHeight, z + (depth * 0.25f)); 
-        set_brush_size(width * 0.5f, height - (2* baseHeight), depth * 0.5f);   
-        set_brush_material(materialName);
+        set_brush_location(x + (width * 0.25f), y + base_height, z + (depth * 0.25f)); 
+        set_brush_size(width * 0.5f, height - (2* base_height), depth * 0.5f);   
+        set_brush_material(material_name);
 }
 
-void Map::build_launchpad(const Ogre::String& name, 
-                         Ogre::Real x, Ogre::Real y, Ogre::Real z, 
-                         bool isExit) {
+void Map::build_launchpad(const Ogre::String& name, Ogre::Real x, Ogre::Real y, Ogre::Real z, bool is_exit) {
     // Note: dimensions and materials are hardcoded
-    create_brush(name, (isExit? BrushType::Exit : BrushType::Start));
+    create_brush(name, (is_exit? BrushType::Exit : BrushType::Start));
         set_brush_location(x, y + 200.0f, z); 
         set_brush_size(800.0f, 5.0f, 800.0f);   
         set_brush_material("Ascent/Caution");
@@ -195,16 +193,16 @@ void Map::set_cube_brush_thickness(Ogre::Real thickness) {
     cube_thickness_ = thickness;
 }
 
-void Map::set_floor_material(const Ogre::String& materialName) {
-    floor_material_ = materialName;
+void Map::set_floor_material(const Ogre::String& material_name) {
+    floor_material_ = material_name;
 }
 
-void Map::set_ceiling_material(const Ogre::String& materialName) {
-    ceiling_material_ = materialName;
+void Map::set_ceiling_material(const Ogre::String& material_name) {
+    ceiling_material_ = material_name;
 }
 
-void Map::set_wall_material(const Ogre::String& materialName) {
-    wall_material_ = materialName;
+void Map::set_wall_material(const Ogre::String& material_name) {
+    wall_material_ = material_name;
 }
 
 void Map::create_light(const Ogre::String& name) {
@@ -218,7 +216,7 @@ void Map::set_light_location(Ogre::Real x, Ogre::Real y, Ogre::Real z) {
 }
 
 void Map::set_light_color(Ogre::Real r, Ogre::Real g, Ogre::Real b) {
-    set_color_member(active_light_->colour, r, g, b);
+    set_color_member(active_light_->color, r, g, b);
 }
 
 void Map::create_entity(const Ogre::String& name) {

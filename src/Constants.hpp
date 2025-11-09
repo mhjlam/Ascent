@@ -8,7 +8,7 @@ enum class BrushType {
 	Exit,
 };
 
-enum EntityType {
+enum class EntityType {
     Brush,
 	PlayerEntity,  // Renamed from Player to avoid conflict with class Player
     EnemyStationary, 

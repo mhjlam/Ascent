@@ -11,7 +11,7 @@ public:
 	virtual ~Enemy() = default;
 
     virtual void update(const Ogre::Real& elapsed);
-	void hit(Ogre::uint dmg);
+	void hit(Ogre::uint damage);
 
 protected:
     void fire_at(const GameEntity* const entity);
@@ -20,8 +20,6 @@ protected:
 
 protected:
 	friend class boost::serialization::access;
-
-	static int num_projectiles_;
 
 protected:
 	Ogre::uint health_;
