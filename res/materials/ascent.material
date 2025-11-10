@@ -4,10 +4,12 @@ material UI/Crosshair
     {
         pass
         {
+            lighting off
+            depth_check off
             scene_blend alpha_blend
             texture_unit 
             {
-                texture textures/crosshair.png
+                texture crosshair.png
             }
         }
     }
@@ -45,7 +47,7 @@ material TextureColors/Red
 			
             texture_unit
 			{
-				texture textures/red.jpg
+				texture red.jpg
 			}
         }
     }
@@ -63,7 +65,7 @@ material TextureColors/Blue
 		
             texture_unit
 			{
-				texture textures/blue.jpg
+				texture blue.jpg
 			}
         }
     }
@@ -81,7 +83,7 @@ material Ascent/MetalSmall
 			
 			texture_unit
 			{
-				texture textures/tread_plate.jpg
+				texture tread_plate.jpg
 				scale 0.1 0.1
 			}
 		}
@@ -100,7 +102,7 @@ material Ascent/MetalMed
 			
 			texture_unit
 			{
-				texture textures/tread_plate.jpg
+				texture tread_plate.jpg
 				scale 0.3 0.3
 			}
 		}
@@ -119,7 +121,7 @@ material Ascent/SeamlessMetal
 			
 			texture_unit
 			{
-				texture textures/sheet_metal.jpg
+				texture sheet_metal.jpg
 				scale 0.3 0.3
 			}
 		}
@@ -138,7 +140,7 @@ material Ascent/SeamlessConcrete
 			
 			texture_unit
 			{
-				texture textures/concrete1.jpg
+				texture concrete1.jpg
 				scale 1 1
 			}
 		}
@@ -157,7 +159,7 @@ material Ascent/SeamlessConcrete2
 			
 			texture_unit
 			{
-				texture textures/concrete2.jpg
+				texture concrete2.jpg
 				scale 0.3 0.3
 			}
 		}
@@ -176,7 +178,7 @@ material Ascent/SeamlessCircuit
 			
 			texture_unit
 			{
-				texture textures/circuitry.jpg
+				texture circuitry.jpg
 				scale 0.3 0.3
 			}
 		}
@@ -195,7 +197,7 @@ material Ascent/Caution
 			
 			texture_unit
 			{
-				texture textures/caution.jpg
+				texture caution.jpg
 			}
 		}
 		
@@ -208,7 +210,7 @@ material Ascent/Caution
 			
 			texture_unit
 			{
-				texture textures/caution_emissive.jpg
+				texture caution_emissive.jpg
 				colour_op_ex modulate src_texture src_manual 2.5 2.0 0.0
 			}
 		}

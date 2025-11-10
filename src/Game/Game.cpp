@@ -84,7 +84,7 @@ void Game::createRoot() {
 	// Call base class to create Root
 	OgreBites::ApplicationContext::createRoot();
 	
-	// Manually load and apply the config from the executable directory  
+	// Manually load and apply the config from the executable directory
 	if (std::ifstream(config_path).good()) {
 		Ogre::ConfigFile cfg;
 		cfg.load(config_path, "\t:=", false);

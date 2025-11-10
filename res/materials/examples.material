@@ -10,7 +10,7 @@ material Examples/Robot
 			
 			texture_unit
 			{
-				texture textures/robot.jpg
+				texture robot.jpg
 			}
 		}
 	}
@@ -28,11 +28,17 @@ material Examples/Razor
 			
 			texture_unit
 			{
-				texture textures/razor.jpg
+				texture razor.jpg
 			}
 		}
 	}
 }
+
+// Alias for the material name embedded in razor.mesh from the 3D modeling tool
+material Material__25 : Examples/Razor
+{
+}
+
 
 material Examples/Red
 {
@@ -41,7 +47,6 @@ material Examples/Red
 		pass
 		{
 			cull_hardware none
-			cull_software none
 			ambient 1.0 0.0 0.0
 			diffuse 1.0 0.0 0.0
 		}
@@ -55,7 +60,6 @@ material Examples/Green
 		pass
 		{
 			cull_hardware none
-			cull_software none
 			ambient 0.0 1.0 0.0
 			diffuse 0.0 1.0 0.0
 			emissive 0.0 0.6 0.0  // Green glow for spawn pad
@@ -70,7 +74,6 @@ material Examples/Blue
 		pass
 		{
 			cull_hardware none
-			cull_software none
 			ambient 0.0 0.0 1.0
 			diffuse 0.0 0.0 1.0
 			emissive 0.0 0.0 0.6  // Blue glow for exit pad
@@ -85,7 +88,6 @@ material GameOverview/Gray
 		pass
 		{
 			cull_hardware none
-			cull_software none
 			ambient 0.6 0.6 0.6
 			diffuse 0.6 0.6 0.6
 		}
@@ -99,7 +101,6 @@ material GameOverview/White
 		pass
 		{
 			cull_hardware none
-			cull_software none
 			ambient 1.0 1.0 1.0
 			diffuse 1.0 1.0 1.0
 		}

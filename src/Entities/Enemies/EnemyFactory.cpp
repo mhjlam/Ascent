@@ -21,14 +21,14 @@ EnemyFactory::EnemyFactory()
 
 
 void EnemyFactory::create_enemy(const Ogre::String& name, EntityType enemy_type, Ogre::Vector3 position) {
-	std::string mesh_file = (enemy_type == EntityType::EnemyFlying ? "razor.mesh" : "robot.mesh");
+	std::string mesh_file = (enemy_type == EntityType::EnemyFlying ? "meshes/razor.mesh" : "meshes/robot.mesh");
 	
 	Ogre::Entity* enemy_entity = Common::scene_manager->createEntity(name, mesh_file);
 	
-	// Fix material assignment - use our examples.material file in General group
+	// Set material - let Ogre find them automatically from material scripts
 	std::string material_name = (enemy_type == EntityType::EnemyFlying ? "Examples/Razor" : "Examples/Robot");
 	for (unsigned int i = 0; i < enemy_entity->getNumSubEntities(); ++i) {
-		enemy_entity->getSubEntity(i)->setMaterialName(material_name, "General");
+		enemy_entity->getSubEntity(i)->setMaterialName(material_name);
 	}
 	
 	enemy_entity->setCastShadows(true);

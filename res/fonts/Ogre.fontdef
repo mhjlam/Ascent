@@ -6,5 +6,4 @@ font BlueHighway
 	source 		bluehigh.ttf
 	size 		16
 	resolution 	96
-	antialias_colour true
 }

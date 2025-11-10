@@ -269,7 +269,7 @@ void GameWorld::create_light(const LightInfo* const light) {
 void GameWorld::create_brush(const BrushInfo* const brush) {
     Ogre::Entity* brush_entity = Common::scene_manager->createEntity(brush->id, "ProgrammaticCube");
     
-    // Use original materials for all brushes - no custom shaders for now
+    // Use original materials for all brushes - let Ogre find them automatically
     brush_entity->setMaterialName(brush->material_name);
     
     brush_entity->setCastShadows(brush->cast_shadows);

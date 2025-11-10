@@ -2,7 +2,7 @@ overlay HUD/CrossHair
 {
     zorder 650
 
-    element Panel(UIelements/CrossHairPanel)
+    overlay_element UIelements/CrossHairPanel Panel
     {
         metrics_mode pixels
         horz_align center
